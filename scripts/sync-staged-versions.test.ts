@@ -42,6 +42,9 @@ function createRepository(): string {
   const pluginPath = join(root, '.codex-plugin', 'plugin.json')
   mkdirSync(dirname(pluginPath), { recursive: true })
   writeFileSync(pluginPath, JSON.stringify({ version: '1.0.0' }))
+  const cursorPluginPath = join(root, '.cursor-plugin', 'plugin.json')
+  mkdirSync(dirname(cursorPluginPath), { recursive: true })
+  writeFileSync(cursorPluginPath, JSON.stringify({ version: '1.0.0' }))
   for (const path of AGENT_TOML_PATHS) {
     const absolutePath = join(root, path)
     mkdirSync(dirname(absolutePath), { recursive: true })
@@ -68,7 +71,7 @@ describe('staged release version synchronization', () => {
     writeFileSync(join(root, '.codex-plugin', 'plugin.json'), JSON.stringify({ version: '2.0.0' }))
     git(root, 'add', '.codex-plugin/plugin.json')
 
-    expect(() => checkStagedVersionAlignment(root)).toThrow('Version mismatch: package.json=1.0.0, plugin.json=2.0.0')
+    expect(() => checkStagedVersionAlignment(root)).toThrow('Version mismatch: package.json=1.0.0, .codex-plugin/plugin.json=2.0.0')
   })
 
   it('syncs plugin and agent versions from the staged package version', () => {
@@ -79,8 +82,9 @@ describe('staged release version synchronization', () => {
     const result = syncStagedVersionAlignment(root)
 
     expect(result.version).toBe('2.0.0')
-    expect(new Set(result.paths)).toEqual(new Set(['.codex-plugin/plugin.json', ...AGENT_TOML_PATHS]))
+    expect(new Set(result.paths)).toEqual(new Set(['.codex-plugin/plugin.json', '.cursor-plugin/plugin.json', ...AGENT_TOML_PATHS]))
     expect(JSON.parse(git(root, 'show', ':.codex-plugin/plugin.json')).version).toBe('2.0.0')
+    expect(JSON.parse(git(root, 'show', ':.cursor-plugin/plugin.json')).version).toBe('2.0.0')
     for (const path of AGENT_TOML_PATHS) {
       expect(git(root, 'show', `:${path}`)).toContain('# devopsflow-version = "2.0.0"')
     }

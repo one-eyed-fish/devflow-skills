@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bun \"${CURSOR_PLUGIN_ROOT}/hooks/cursor/session-start.ts\""
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "bun \"${CURSOR_PLUGIN_ROOT}/hooks/cursor/pre-tool-use.ts\"",
+        "matcher": "^Shell$"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "bun \"${CURSOR_PLUGIN_ROOT}/hooks/cursor/post-tool-use.ts\"",
+        "matcher": "^(Edit|Write|apply_patch)$"
+      }
+    ]
+  }
+}

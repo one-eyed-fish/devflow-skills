@@ -1,4 +1,0 @@
-interface:
-  display_name: "Dev Frontend Designmd"
-  short_description: "只要任务涉及 frontend 项目的页面、组件、样式、布局、视觉、交互或 UI/UX 设计与编码，就自动使用此 skill；不要求用户先提及 DESIGN.md。agent 必须默认检查并遵守目标目录 AGENTS.md 中声明的 [@DESIGN.md](DESIGN.md)，并在开始修改前主动说明将按该契约执行，在发现实现偏离时主动依据该契约纠正。该 skill 也适用于创建或更新 DESIGN.md、选择模板和验证设计契约，可由 Codex、Claude、Gemini 或其他能读取项目文件的 agent 使用。不要用于与 frontend/UI/UX 无关的后端、数据或纯文档任务。"
-  default_prompt: "只要任务涉及 frontend、UI 或 UX，就使用 $df-dev-frontend-designmd，先确认 AGENTS.md 已声明遵守 [@DESIGN.md](DESIGN.md)，主动按契约设计和编码，发现偏离时纠正，并用 lint、diff、可访问性和项目验证命令交付证据。"

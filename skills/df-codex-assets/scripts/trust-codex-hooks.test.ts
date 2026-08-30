@@ -23,7 +23,7 @@ const UPSTREAM_TRUST_SOURCES = [
         end: 'fn hook_trust_status(',
       },
     ],
-    fingerprint: 'sha256:0aed89fd5d366e92a410fd904a4ca782714204addf702a1fa89fa719e62c5fa4',
+    fingerprint: 'sha256:c2fd2dd31da552d248d29c44f9e20b48480a7444d847288bd992f9126a99f67a',
   },
   {
     path: 'codex-rs/config/src/fingerprint.rs',
