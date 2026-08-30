@@ -1,6 +1,0 @@
-interface:
-  display_name: "Ai Agentinstruction Authoring"
-  short_description: "改进 AGENTS, SKILL and agent 指令的结构, 格式 and execution 效果."
-  default_prompt: "Use $df-ai-agentinstruction-authoring, each and enumable current project 下的 all AGENTS.md, SKILL.md or agent instruction, 然后对其进行优化."
-  icon_small: "./assets/openai-logo.svg"
-  icon_large: "./assets/openai-logo.svg"
