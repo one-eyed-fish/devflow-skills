@@ -16,5 +16,3 @@ jobs:
           bun-version: latest
       - name: Check skill folder and front matter names
         run: bun run check:skill-metadata
-      - name: Check agent instruction authoring
-        run: bun run check:agent-instructions

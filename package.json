@@ -6,9 +6,6 @@
   "private": false,
   "packageManager": "bun@1.3.14",
   "scripts": {
-    "check:agent-instructions": "bun skills/df-ai-agentinstruction-authoring/scripts/validate-agent-instructions.ts",
-    "check:agent-instruction-normalization": "bun skills/df-ai-agentinstruction-authoring/scripts/normalize-agent-instructions.ts --check",
-    "fix:agent-instructions": "bun skills/df-ai-agentinstruction-authoring/scripts/normalize-agent-instructions.ts --fix",
     "check:skill-eof": "bun scripts/ensure-skill-eof.ts",
     "check:skill-versions": "bun scripts/check-staged-skill-versions.ts",
     "check:skill-metadata": "bun scripts/check-skill-metadata.ts",
