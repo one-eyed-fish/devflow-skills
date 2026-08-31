@@ -41,6 +41,33 @@ codex plugin add devopsflow@devopsflow
 
 当前 Codex CLI 没有 `codex plugin update` 子命令；`plugin add` 是已配置 marketplace 中插件的安装/刷新入口。
 
+> hooks 需要用户显式打开，在 codex desktop 当中
+> `Settings` -> `Hooks`
+> ![settings](assets/screenshorts/codex-settings-entrance.png)
+> ![hooks](assets/screenshorts/codex-settings-hooks-entrance.png)
+
+### Cursor
+
+Cursor 支持从本地检出的仓库安装。Linux 和 macOS 执行：
+
+<details>
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -s "$(pwd)" ~/.cursor/plugins/local/devopsflow
+```
+
+Windows PowerShell 执行：
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.cursor\plugins\local"
+New-Item -ItemType Junction -Path "$HOME\.cursor\plugins\local\devopsflow" -Target (Get-Location)
+```
+
+该插件通过 `.cursor-plugin/plugin.json` 声明 Cursor 插件，通过 `skills/` 暴露工程工作流，并加载 `hooks/hooks.cursor.json`。Cursor hooks 会在会话开始时更新受保护分支，在 Shell 工具执行前阻止 Agent 直接提交或推送 Git 变更，并在编辑后运行适用的格式化检查。
+
+</details>
+
 ### OpenCode
 
 下载本仓库后，在项目的 `opencode.json` 中添加：

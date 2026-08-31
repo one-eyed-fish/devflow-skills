@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { runLoggedScript } from '@/shared/script-logger'
 
+const RELEASE_PLUGIN_PATHS = ['.codex-plugin/plugin.json', '.cursor-plugin/plugin.json'] as const
+
 export interface VersionAlignment {
   readonly version: string
 }
@@ -22,7 +24,7 @@ export function agentTomlPaths(root: string): string[] {
 
 export function checkStagedVersionAlignment(root: string): VersionAlignment {
   const packageVersion = jsonVersion('package.json', readStagedFile(root, 'package.json'))
-  const pluginVersion = jsonVersion('.codex-plugin/plugin.json', readStagedFile(root, '.codex-plugin/plugin.json'))
+  const pluginVersions = RELEASE_PLUGIN_PATHS.map((path) => ({ path, version: jsonVersion(path, readStagedFile(root, path)) }))
   const agentVersions = agentTomlPaths(root).map((path) => {
     const content = readStagedFile(root, path).toString('utf-8')
     if (/^version\s*=/m.test(content)) {
@@ -32,10 +34,11 @@ export function checkStagedVersionAlignment(root: string): VersionAlignment {
     if (!version) throw new Error(`${path} is missing its devopsflow-version marker`)
     return { path, version }
   })
+  const mismatchedPlugins = pluginVersions.filter(({ version }) => version !== packageVersion)
   const mismatchedAgents = agentVersions.filter(({ version }) => version !== packageVersion)
-  if (packageVersion !== pluginVersion || mismatchedAgents.length > 0) {
+  if (mismatchedPlugins.length > 0 || mismatchedAgents.length > 0) {
     throw new Error(
-      `Version mismatch: package.json=${packageVersion}, plugin.json=${pluginVersion}, ${agentVersions.map(({ path, version }) => `${path}=${version}`).join(', ')}`,
+      `Version mismatch: package.json=${packageVersion}, ${pluginVersions.map(({ path, version }) => `${path}=${version}`).join(', ')}, ${agentVersions.map(({ path, version }) => `${path}=${version}`).join(', ')}`,
     )
   }
   return { version: packageVersion }
@@ -44,14 +47,15 @@ export function checkStagedVersionAlignment(root: string): VersionAlignment {
 export function syncStagedVersionAlignment(root: string): SyncStagedVersionsResult {
   const version = jsonVersion('package.json', readStagedFile(root, 'package.json'))
   const paths: string[] = []
-  const pluginPath = '.codex-plugin/plugin.json'
-  const stagedPlugin = readStagedFile(root, pluginPath)
-  const pluginContent = stagedPlugin.toString('utf-8')
-  const pluginJson = JSON.parse(pluginContent) as Record<string, unknown>
-  if (pluginJson.version !== version) {
-    const updatedPlugin = pluginContent.replace(/("version"\s*:\s*)"[^"]+"/, `$1"${version}"`)
-    syncFileToIndex(root, pluginPath, stagedPlugin, Buffer.from(updatedPlugin))
-    paths.push(pluginPath)
+  for (const pluginPath of RELEASE_PLUGIN_PATHS) {
+    const stagedPlugin = readStagedFile(root, pluginPath)
+    const pluginContent = stagedPlugin.toString('utf-8')
+    const pluginJson = JSON.parse(pluginContent) as Record<string, unknown>
+    if (pluginJson.version !== version) {
+      const updatedPlugin = pluginContent.replace(/("version"\s*:\s*)"[^"]+"/, `$1"${version}"`)
+      syncFileToIndex(root, pluginPath, stagedPlugin, Buffer.from(updatedPlugin))
+      paths.push(pluginPath)
+    }
   }
 
   for (const path of agentTomlPaths(root)) {

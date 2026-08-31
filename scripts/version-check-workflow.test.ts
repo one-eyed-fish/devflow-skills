@@ -26,7 +26,7 @@ describe('version-check workflow', () => {
   it('defines every package script invoked by the skill metadata workflow', () => {
     const skillMetadataWorkflow = readFileSync(join(ROOT, '.github', 'workflows', 'skill-metadata-check.yml'), 'utf-8')
 
-    expect(skillMetadataWorkflow).toContain('bun run check:agent-instructions')
-    expect(PACKAGE.scripts['check:agent-instructions']).toBe('bun skills/df-ai-agentinstruction-authoring/scripts/validate-agent-instructions.ts')
+    expect(skillMetadataWorkflow).toContain('bun run check:skill-metadata')
+    expect(PACKAGE.scripts['check:skill-metadata']).toBe('bun scripts/check-skill-metadata.ts')
   })
 })

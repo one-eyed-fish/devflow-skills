@@ -1,0 +1,17 @@
+{
+  "name": "devopsflow",
+  "owner": {
+    "name": "LiTeXz",
+    "email": "truenine304520@gmail.com"
+  },
+  "metadata": {
+    "description": "DevopsFlow Cursor plugin marketplace"
+  },
+  "plugins": [
+    {
+      "name": "devopsflow",
+      "source": ".",
+      "description": "Engineering workflows and safeguards for AI coding agents"
+    }
+  ]
+}
