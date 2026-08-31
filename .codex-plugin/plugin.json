@@ -1,6 +1,6 @@
 {
   "name": "devopsflow",
-  "version": "0.2.35",
+  "version": "0.2.36",
   "description": "DevopsFlow engineering workflow and agent harness for Codex, combining skills, hooks, MCP integration, specialized agents, execution constraints, and feedback loops.",
   "author": {
     "name": "LiTeXz",
