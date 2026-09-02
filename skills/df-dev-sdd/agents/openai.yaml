@@ -1,0 +1,7 @@
+interface:
+  display_name: "Dev Sdd"
+  short_description: "使用规范驱动开发（Specification-Driven Development，SDD）将已确认的需求和系统约束维护为可执行、可追踪、可验证的规范，并以规范作为设计、实现、测试和变更审查的主线。适用于 API、协议、数据格式、CLI、配置、领域规则或跨团队契约等需要先定义规范再实现的开发任务；不适用于只做局部格式调整或没有明确可验证契约的探索性原型。"
+  default_prompt: "使用 $df-dev-sdd 先定义可追踪、可验证的规范和兼容策略，再将规范拆分为 implementation slices，并验证代码、测试、示例和文档的一致性。"
+
+policy:
+  allow_implicit_invocation: true

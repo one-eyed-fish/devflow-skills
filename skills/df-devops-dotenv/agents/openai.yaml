@@ -1,0 +1,7 @@
+interface:
+  display_name: "Devops Dotenv"
+  short_description: "管理跨 development、testing、deployment 和 operations 生命周期的 dotenv 环境变量配置，涵盖 .env 文件分层、变量优先级、模板、校验、secret 安全、CI/CD 注入和本地运行边界。适用于新增、迁移、审查或排查 .env、dotenv、环境变量、配置模板、部署变量和 secret 管理任务；不适用于把 dotenv 文件当作生产 secret vault 或动态业务数据存储。"
+  default_prompt: "使用 $df-devops-dotenv 审查或设计 dotenv 环境变量的生命周期、加载优先级、校验、secret 注入和安全边界，并验证所有运行环境的一致性。"
+
+policy:
+  allow_implicit_invocation: true

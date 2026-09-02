@@ -20,7 +20,7 @@ this file 补充根 [AGENTS.md](../AGENTS.md), 适用于 `skills/` 子树.
 
 ## Metadata
 
-- skill directory 名必须以 `df-dev-`, `df-ops-`, `df-ai-` or `df-doc-` 开头.
+- skill directory 名必须以 `df-dev-`, `df-ops-`, `df-devops-`, `df-ai-` or `df-doc-` 开头.
 - `SKILL.md` front matter 必须 include `name` and `description`, 且 `name` 必须 and directory 名 exactly match.
 - Agent Skills specification 将 `agents/openai.yaml` 视为 optional; 本 repository 额外要求每个 skill include 该 file.
 - `interface.display_name` 必须等于 directory 名移除 `df-` 后按单词首字母大 write 得到的 name.
