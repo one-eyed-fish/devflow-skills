@@ -21,6 +21,16 @@ skills/         DevopsFlow skills 及其配套资源
 src/shared/     hook and 适配器共享的 TypeScript implementations
 ```
 
+## Skill Namespace Semantics
+
+DevopsFlow skill 名称中的生命周期前缀表示职责范围：
+
+- `df-dev-*`：开发阶段能力，覆盖需求分析、设计、编码、测试、重构和代码审查等 development 工作。
+- `df-ops-*`：运维与交付能力，覆盖运行环境、依赖、部署、监控、发布和基础设施等 operations 工作。
+- `df-devops-*`：跨越软件全生命周期的能力，既可用于 development，也可用于 operations、delivery、release 或运行维护，不应限制在单一阶段。
+
+新增 skill 时，应选择能够准确表达其生命周期范围的最窄前缀；如果能力同时服务于开发和运维全流程，使用 `df-devops-*`。目录名、`SKILL.md` front matter 的 `name` 和调用提示中的 skill 名必须保持一致。
+
 ## Technology Stack
 
 - runtime and package manager: Bun 1.3.14.
