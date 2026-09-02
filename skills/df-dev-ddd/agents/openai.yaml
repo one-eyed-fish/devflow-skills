@@ -1,0 +1,7 @@
+interface:
+  display_name: "Dev Ddd"
+  short_description: "使用行为优先的 Domain-Driven Design（DDD）方法推进软件开发，从业务需求澄清、领域建模、Event Storming、Command/Event/Rule 设计，到已确认模型向 TDD implementation slices 的交接。适用于新功能、复杂业务规则、状态生命周期、多角色协作、跨聚合流程以及需要保持 domain language 一致的开发任务；不适用于仅有格式调整、纯技术升级或没有业务行为变化的简单修改。"
+  default_prompt: "使用 $df-dev-ddd 组织 DDD 开发：先确认业务边界、participant、Command、Domain Event、Rule 和 Aggregate，再将已确认模型交接为可执行的 TDD implementation slices，并在实现后完成验证。"
+
+policy:
+  allow_implicit_invocation: true
