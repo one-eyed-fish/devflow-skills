@@ -42,6 +42,33 @@ describe('routeTask', () => {
       risks: [RiskDimension.ApiAuthorization, RiskDimension.ApiResourceDesign],
     })
 
-    expect(decision.executionOrder).toEqual([Skill.IamAccessControlDesign, Skill.GoogleAipApiDesign, Skill.VerificationBeforeCompletion])
+    expect(decision.executionOrder).toEqual([
+      Skill.EngineeringStandards,
+      Skill.IamAccessControlDesign,
+      Skill.GoogleAipApiDesign,
+      Skill.VerificationBeforeCompletion,
+    ])
+  })
+
+  test('routes code review through authoritative engineering standards', () => {
+    expect(routeTask({ taskType: TaskType.CodeReview }).executionOrder).toEqual([Skill.EngineeringStandards, Skill.VerificationBeforeCompletion])
+  })
+
+  test('routes architecture and input boundary risks through the standards skill', () => {
+    const decision = routeTask({
+      taskType: TaskType.DesignReview,
+      risks: [RiskDimension.ArchitectureBoundary, RiskDimension.InputBoundary],
+    })
+
+    expect(decision.executionOrder).toEqual([Skill.EngineeringStandards, Skill.VerificationBeforeCompletion])
+  })
+
+  test('routes security and Java style risks through the standards skill once', () => {
+    const decision = routeTask({
+      taskType: TaskType.NewFeature,
+      risks: [RiskDimension.SecurityBoundary, RiskDimension.JavaStyle],
+    })
+
+    expect(decision.executionOrder.filter((skill) => skill === Skill.EngineeringStandards)).toHaveLength(1)
   })
 })

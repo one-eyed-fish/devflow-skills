@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dev Engineering Standards"
+  short_description: "按权威工程规范处理架构、API、安全、输入边界、Java 代码规范和代码评审任务"
+  default_prompt: "使用 $df-dev-engineering-standards 为当前规范敏感任务选择权威标准并形成可验证的工程决策。"

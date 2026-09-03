@@ -56,6 +56,14 @@ export enum RiskDimension {
   ApiAuthorization = 'api_authorization',
   /** The design includes resource-oriented API or transport semantics. */
   ApiResourceDesign = 'api_resource_design',
+  /** The task changes a module, layer, dependency, or ownership boundary. */
+  ArchitectureBoundary = 'architecture_boundary',
+  /** The task changes normalization, validation, or input-contract ownership. */
+  InputBoundary = 'input_boundary',
+  /** The task changes general security controls beyond API authorization. */
+  SecurityBoundary = 'security_boundary',
+  /** The task requires Java language style or layout rules. */
+  JavaStyle = 'java_style',
   /** A failure exists but its earliest causal mechanism is not yet proven. */
   UnknownRootCause = 'unknown_root_cause',
   /** Independent scopes can be delegated without overlapping ownership. */
@@ -73,6 +81,8 @@ export const RISK_DIMENSIONS = Object.values(RiskDimension)
  * TypeScript constrain all output to known DevopsFlow skills.
  */
 export enum Skill {
+  /** Selects authoritative engineering standards for standards-sensitive work. */
+  EngineeringStandards = 'df-dev-engineering-standards',
   /** Protects long-running work with checkpoints and resumable state. */
   ResumableWorkflowGuard = 'df-resumable-workflow-guard',
   /** Clarifies domain behavior through event storming and DDD modeling. */
@@ -190,6 +200,7 @@ export interface RouteDecision {
  * until its explanation is defined here.
  */
 const REASONS: Record<Skill, string> = {
+  [Skill.EngineeringStandards]: 'The task is standards-sensitive and requires authoritative engineering guidance.',
   [Skill.ResumableWorkflowGuard]: 'The task is long-running, spans multiple stages, or requires resumable execution.',
   [Skill.DomainEventStormingDesign]: 'Domain language, business rules, or ownership boundaries require clarification.',
   [Skill.GlueCoding]: 'The implementation should reuse established repository patterns and local project materials.',
@@ -227,8 +238,8 @@ const TASK_SKILLS: Record<TaskType, readonly Skill[]> = {
   [TaskType.PureRefactor]: [Skill.ImplementationPlanning, Skill.Tdd, Skill.ExecutingImplementationPlan, Skill.VerificationBeforeCompletion],
   [TaskType.DomainModeling]: [Skill.DomainEventStormingDesign, Skill.VerificationBeforeCompletion],
   [TaskType.GlueCoding]: [Skill.GlueCoding, Skill.ImplementationPlanning, Skill.ExecutingImplementationPlan, Skill.VerificationBeforeCompletion],
-  [TaskType.DesignReview]: [Skill.VerificationBeforeCompletion],
-  [TaskType.CodeReview]: [Skill.VerificationBeforeCompletion],
+  [TaskType.DesignReview]: [Skill.EngineeringStandards, Skill.VerificationBeforeCompletion],
+  [TaskType.CodeReview]: [Skill.EngineeringStandards, Skill.VerificationBeforeCompletion],
   [TaskType.ReviewFeedback]: [Skill.ReceivingCodeReview, Skill.VerificationBeforeCompletion],
   [TaskType.Verification]: [Skill.VerificationBeforeCompletion],
   [TaskType.BranchFinish]: [Skill.VerificationBeforeCompletion, Skill.FinishingDevelopmentBranch],
@@ -246,9 +257,13 @@ const RISK_SKILLS: Record<RiskDimension, readonly Skill[]> = {
   [RiskDimension.DomainAmbiguity]: [Skill.DomainEventStormingDesign, Skill.DddToTddHandoff],
   [RiskDimension.LocalPatternReuse]: [Skill.GlueCoding],
   [RiskDimension.BehaviorChange]: [Skill.Tdd],
-  [RiskDimension.SpringWebBoundary]: [Skill.SpringWebBoundaries],
-  [RiskDimension.ApiAuthorization]: [Skill.IamAccessControlDesign],
-  [RiskDimension.ApiResourceDesign]: [Skill.GoogleAipApiDesign],
+  [RiskDimension.SpringWebBoundary]: [Skill.EngineeringStandards, Skill.SpringWebBoundaries],
+  [RiskDimension.ApiAuthorization]: [Skill.EngineeringStandards, Skill.IamAccessControlDesign],
+  [RiskDimension.ApiResourceDesign]: [Skill.EngineeringStandards, Skill.GoogleAipApiDesign],
+  [RiskDimension.ArchitectureBoundary]: [Skill.EngineeringStandards],
+  [RiskDimension.InputBoundary]: [Skill.EngineeringStandards],
+  [RiskDimension.SecurityBoundary]: [Skill.EngineeringStandards],
+  [RiskDimension.JavaStyle]: [Skill.EngineeringStandards],
   [RiskDimension.UnknownRootCause]: [Skill.SystematicDebugging],
   [RiskDimension.Parallelizable]: [Skill.ParallelAgentOrchestration],
 }
@@ -262,6 +277,7 @@ const RISK_SKILLS: Record<RiskDimension, readonly Skill[]> = {
  * rely on their local array order because task and risk routes are merged.
  */
 const EXECUTION_PRIORITY: readonly Skill[] = [
+  Skill.EngineeringStandards,
   Skill.ResumableWorkflowGuard,
   Skill.DomainEventStormingDesign,
   Skill.GlueCoding,
