@@ -1,10 +1,10 @@
 ---
 name: df-ddd-event-storming-design
 description: 使用 Event Storming, CQRS and 需求追踪进行通用 DDD domain 建模. 当 Codex 需要澄清原始业务需求, 将干系人诉求拆分为需求条目, 持续演进 domain 模型, 识别 participant and 多角色协作, Domain Event, Command, Policy, Aggregate, Domain Service and Read Model, generate 结构化 Markdown or 可选的 Mermaid/PlantUML 图表, 以及审查由 CRUD, 数据库, package 结构 or DDD 术语 driven 而非由问题域 driven 的设计时, 使用此 skill. 尤其适用于公司, 部门, 岗位, 员工, 账号, 角色 or 权限管理等看似 CRUD 的后台需求, 此类需求应采用行为优先建模, 而不是建立扁平的名词 Aggregate.
-version: "0.2.30"
+version: "0.2.31"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.30"
+  version: "0.2.31"
 ---
 
 # DDD Event Storming Design
@@ -258,7 +258,7 @@ file 职责:
 - 非查询消费者: 该事实影响的 participant 选项, Command 侧 rule, Policy/流程, Aggregate 关系, 生命周期 or 下游业务能力
 - Read Model 影响(如有): 哪些投影 and 字段发生变化
 
-分析中被拒绝或降级的事实记录到非正式拒绝日志，供未来识别重复；不得进入正式 `Domain Event Catalog` or Aggregate event 列表. 该日志不参与正式设计完整性校验.
+分析中被拒绝或降级的事实记录到非正式拒绝日志, 供未来识别重复; 不得进入正式 `Domain Event Catalog` or Aggregate event 列表. 该日志不参与正式设计完整性校验.
 
 ### Command Granularity Gate
 
@@ -431,7 +431,7 @@ if 不同 participant 可以发起相似 Command, 且差异会 change 必填字�
 
 ### 2. Identify And Accept Domain Events
 
-从业务分析中逐条识别业务事实。事件优先于命令被发现，但必须随后反推出至少一个命令解释并验证业务消费关系；未完成时只能作为临时分析事实.
+从业务分析中逐条识别业务事实. 事件优先于命令被发现, 但必须随后反推出至少一个命令解释并验证业务消费关系; 未完成时只能作为临时分析事实.
 
 只保留当前问题域为业务 rule, 状态决策, workflow 推进, Policy/流程反应, Aggregate 协作 or 下游业务能力所需的事实. 不得仅因 Read Model 需要刷新 or 展示字段, 就将某事实保留为 Domain Event.
 
@@ -447,7 +447,7 @@ rule:
 
 ### 3. Derive Commands From Events
 
-为每个已识别事件反推出一个或多个业务 Command。事件是中心节点，命令来源不唯一；每个来源分别记录发起者、业务意图、前置条件和生产场景，只有完全等价时才合并.
+为每个已识别事件反推出一个或多个业务 Command. 事件是中心节点, 命令来源不唯一; 每个来源分别记录发起者, 业务意图, 前置条件和生产场景, 只有完全等价时才合并.
 
 Command 是发送给 domain 模型, 用于完成有 value 业务动作的指令.
 
@@ -465,11 +465,11 @@ rule:
 
 ### 4. Formal Event Scenario Replay
 
-对已接纳事件执行双向场景回放，而不是对候选池做完整性检查：
+对已接纳事件执行双向场景回放, 而不是对候选池做完整性检查:
 
-- 从业务场景的触发 Command 或外部事实正向回放 `Command -> Event -> Consumer`，验证消费后果并发现遗漏事实.
-- 从每个正式 Event 反向检查所有已识别 Command 来源，确认每个来源都有业务意图、条件和生产路径.
-- 回放失败时修正事件、命令或消费关系；不得重新建立候选事件池.
+- 从业务场景的触发 Command 或外部事实正向回放 `Command -> Event -> Consumer`, 验证消费后果并发现遗漏事实.
+- 从每个正式 Event 反向检查所有已识别 Command 来源, 确认每个来源都有业务意图, 条件和生产路径.
+- 回放失败时修正事件, 命令或消费关系; 不得重新建立候选事件池.
 
 ### 5. Model Policies And Processes
 
@@ -566,7 +566,7 @@ example:
 
 只列出真正需要的 Domain Service.
 
-使用 `事件识别与接纳` 记录逐事件判断；拒绝或降级事实另存于非正式拒绝日志，不作为第二份 event directory.
+使用 `事件识别与接纳` 记录逐事件判断; 拒绝或降级事实另存于非正式拒绝日志, 不作为第二份 event directory.
 
 只有存在有意义的备选方案时, 才使用 `建模方案对比`. include 2-3 个选项, 取舍 and 推荐选项.
 
