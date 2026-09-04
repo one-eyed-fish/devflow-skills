@@ -1,6 +1,6 @@
 {
   "name": "devopsflow",
-  "version": "0.2.36",
+  "version": "0.2.37",
   "type": "module",
   "license": "GPL-3.0-only",
   "private": false,
@@ -11,6 +11,8 @@
     "check:skill-metadata": "bun scripts/check-skill-metadata.ts",
     "sync:versions:staged": "bun scripts/sync-staged-versions.ts",
     "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "test:mutation": "stryker run stryker.config.ts",
     "test:repository-scripts": "bun test scripts/",
     "test:validators": "bun test skills/df-dev-tdd/scripts/ skills/df-ddd-event-storming-design/scripts/ skills/df-iam-access-control-design/scripts/",
     "typecheck": "bunx tsc --noEmit",
@@ -24,6 +26,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.11",
+    "@stryker-mutator/api": "^10.0.0",
+    "@stryker-mutator/core": "^10.0.0",
     "@types/bun": "^1.4.0",
     "husky": "^9.1.7",
     "typescript": "^7.0.2"

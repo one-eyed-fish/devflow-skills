@@ -32,7 +32,7 @@ export function extractEditedPaths(command: string): string[] {
 }
 
 export function biomeCommand(root: string, paths: string[]): string[] {
-  return [process.execPath, resolve(root, 'node_modules', '@biomejs', 'biome', 'bin', 'biome'), 'format', '--write', ...paths]
+  return [process.execPath, resolve(root, 'node_modules', '@biomejs', 'biome', 'bin', 'biome'), 'format', '--write', '--vcs-use-ignore-file=false', ...paths]
 }
 
 export function spotlessTaskForPath(path: string): string | undefined {
@@ -140,6 +140,9 @@ function hasBiomeConfig(root: string): boolean {
 }
 
 function gitRoot(cwd: string): string | undefined {
+  const localRoot = realpathSync(cwd)
+  if (hasBiomeConfig(localRoot) && existsSync(resolve(localRoot, 'package.json'))) return localRoot
+
   const result = Bun.spawnSync({ cmd: ['git', 'rev-parse', '--show-toplevel'], cwd, stderr: 'ignore' })
   if (result.exitCode !== 0) return undefined
   const root = result.stdout.toString().trim()

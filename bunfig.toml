@@ -3,3 +3,20 @@ production = false
 
 [run]
 bun = true
+
+[test]
+coverage = true
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = [
+  "**/*.test.ts",
+  "**/*.spec.ts",
+  "**/generated/**",
+  "**/vendor/**",
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/.stryker-tmp/**",
+  "**/reports/**",
+]

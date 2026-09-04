@@ -1,10 +1,10 @@
 ---
 name: df-ddd-event-storming-design
 description: 使用 Event Storming, CQRS and 需求追踪进行通用 DDD domain 建模. 当 Codex 需要澄清原始业务需求, 将干系人诉求拆分为需求条目, 持续演进 domain 模型, 识别 participant and 多角色协作, Domain Event, Command, Policy, Aggregate, Domain Service and Read Model, generate 结构化 Markdown or 可选的 Mermaid/PlantUML 图表, 以及审查由 CRUD, 数据库, package 结构 or DDD 术语 driven 而非由问题域 driven 的设计时, 使用此 skill. 尤其适用于公司, 部门, 岗位, 员工, 账号, 角色 or 权限管理等看似 CRUD 的后台需求, 此类需求应采用行为优先建模, 而不是建立扁平的名词 Aggregate.
-version: "0.2.31"
+version: "0.2.32"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.31"
+  version: "0.2.32"
 ---
 
 # DDD Event Storming Design

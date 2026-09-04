@@ -50,6 +50,8 @@ export enum RiskDimension {
   LocalPatternReuse = 'local_pattern_reuse',
   /** The task adds or modifies observable executable behavior. */
   BehaviorChange = 'behavior_change',
+  /** Existing tests require mutation analysis to assess their defect-detection strength. */
+  TestEffectiveness = 'test_effectiveness',
   /** The change touches a Spring controller, HTTP contract, or web boundary. */
   SpringWebBoundary = 'spring_web_boundary',
   /** The design includes permissions, roles, RBAC, ABAC, or authorization checks. */
@@ -101,6 +103,8 @@ export enum Skill {
   ExecutingImplementationPlan = 'df-executing-implementation-plan',
   /** Develops executable behavior with test-first feedback. */
   Tdd = 'df-dev-tdd',
+  /** Evaluates test effectiveness by checking whether meaningful code mutations are detected. */
+  MutationTesting = 'df-dev-tdd-mutation-testing',
   /** Applies Spring Web controller and service-boundary guardrails. */
   SpringWebBoundaries = 'df-spring-web-boundaries',
   /** Establishes evidence for the root cause before applying a fix. */
@@ -210,6 +214,7 @@ const REASONS: Record<Skill, string> = {
   [Skill.ImplementationPlanning]: 'A multi-step or risky change requires a concrete implementation plan.',
   [Skill.ExecutingImplementationPlan]: 'The confirmed implementation plan must be executed step by step.',
   [Skill.Tdd]: 'New, corrected, or preserved executable behavior requires test-first development.',
+  [Skill.MutationTesting]: 'Test effectiveness must be assessed against meaningful production-code mutations.',
   [Skill.SpringWebBoundaries]: 'The task changes a Spring Web boundary.',
   [Skill.SystematicDebugging]: 'The root cause of a failure or defect has not yet been proven.',
   [Skill.ParallelAgentOrchestration]: 'Independent scopes can be executed safely in parallel.',
@@ -254,9 +259,10 @@ const TASK_SKILLS: Record<TaskType, readonly Skill[]> = {
  */
 const RISK_SKILLS: Record<RiskDimension, readonly Skill[]> = {
   [RiskDimension.LongRunning]: [Skill.ResumableWorkflowGuard],
-  [RiskDimension.DomainAmbiguity]: [Skill.DomainEventStormingDesign, Skill.DddToTddHandoff],
+  [RiskDimension.DomainAmbiguity]: [Skill.DomainEventStormingDesign],
   [RiskDimension.LocalPatternReuse]: [Skill.GlueCoding],
   [RiskDimension.BehaviorChange]: [Skill.Tdd],
+  [RiskDimension.TestEffectiveness]: [Skill.MutationTesting],
   [RiskDimension.SpringWebBoundary]: [Skill.EngineeringStandards, Skill.SpringWebBoundaries],
   [RiskDimension.ApiAuthorization]: [Skill.EngineeringStandards, Skill.IamAccessControlDesign],
   [RiskDimension.ApiResourceDesign]: [Skill.EngineeringStandards, Skill.GoogleAipApiDesign],
@@ -288,6 +294,7 @@ const EXECUTION_PRIORITY: readonly Skill[] = [
   Skill.SystematicDebugging,
   Skill.ExecutingImplementationPlan,
   Skill.Tdd,
+  Skill.MutationTesting,
   Skill.SpringWebBoundaries,
   Skill.ParallelAgentOrchestration,
   Skill.RequestingCodeReview,
@@ -367,9 +374,9 @@ function usage(): string {
  * token; otherwise `undefined`. The helper does not trim, split, or validate
  * the returned value.
  */
-function readOption(name: string): string | undefined {
-  const index = Bun.argv.indexOf(name)
-  return index < 0 ? undefined : Bun.argv[index + 1]
+export function readOption(name: string, args: readonly string[] = Bun.argv): string | undefined {
+  const index = args.indexOf(name)
+  return index < 0 ? undefined : args[index + 1]
 }
 
 // CLI input is read from `Bun.argv`. Successful output is either human-readable

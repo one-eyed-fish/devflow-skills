@@ -39,22 +39,20 @@ const SMELLS: Record<string, string[]> = {
 
 const REQUIRED_SECTIONS = ['Problem Domain Boundary', 'Actors', 'Domain Events', 'Commands', 'Policy', 'Aggregates', 'Read Models', 'Completeness Check']
 
-function readText(filePath: string): string {
-  try {
-    const stat = require('node:fs').statSync(filePath)
-    if (stat.isDirectory()) {
-      const parts: string[] = []
-      const files = readdirSync(filePath).sort()
-      for (const file of files) {
-        if (file.endsWith('.md')) {
-          parts.push(`\n# FILE: ${file}\n`)
-          parts.push(readFileSync(join(filePath, file), 'utf-8'))
-        }
-      }
-      return parts.join('\n')
+export function sortMarkdownFiles(files: readonly string[]): string[] {
+  return files.filter((file) => file.endsWith('.md')).toSorted()
+}
+
+export function readText(filePath: string): string {
+  const stat = require('node:fs').statSync(filePath)
+  if (stat.isDirectory()) {
+    const parts: string[] = []
+    const files = sortMarkdownFiles(readdirSync(filePath))
+    for (const file of files) {
+      parts.push(`\n# FILE: ${file}\n`)
+      parts.push(readFileSync(join(filePath, file), 'utf-8'))
     }
-  } catch {
-    // Not a directory, treat as file
+    return parts.join('\n')
   }
   return readFileSync(filePath, 'utf-8')
 }
@@ -125,9 +123,7 @@ export function validateDesign(text: string, requireSections: boolean = false): 
 }
 
 function main(): number {
-  const rawArgs = Bun.argv
-  const scriptIdx = rawArgs.findIndex((a) => a.includes('validate-ddd-design'))
-  const args = scriptIdx >= 0 ? rawArgs.slice(scriptIdx + 1) : rawArgs.slice(2)
+  const args = Bun.argv.slice(2)
 
   const path = args.find((a) => !a.startsWith('--'))
   const requireSections = args.includes('--require-sections')

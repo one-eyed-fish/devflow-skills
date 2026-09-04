@@ -1,0 +1,7 @@
+interface:
+  display_name: "Dev Tdd Mutation Testing"
+  short_description: "使用通用变异测试评估 tests 是否能识别生产 code 中有意义的行为变化。适用于 TDD 达到 GREEN 后、关键逻辑或高风险 change 需要验证 tests 有效性、覆盖率较高但断言质量存疑、或需要分析幸存变异时；不替代 RED-GREEN-REFACTOR，也不用于仅追求覆盖率或分数。"
+  default_prompt: "使用 $df-dev-tdd-mutation-testing 在 GREEN 后限定 production scope，运行变异测试，分析幸存变异并以可观察行为强化 tests。"
+
+policy:
+  allow_implicit_invocation: true

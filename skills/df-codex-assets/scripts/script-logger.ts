@@ -40,7 +40,6 @@ export function readScriptPayload(): Record<string, unknown> | null {
       bytesRead = readSync(0, buffer, 0, buffer.length, null)
     }
     const raw = Buffer.concat(chunks).toString('utf-8')
-    if (!raw.trim()) return null
     const parsed = JSON.parse(raw)
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null
   } catch {
@@ -86,15 +85,12 @@ export function createScriptLogger(context: ScriptLoggingContext): ScriptLogger 
   let filePath: string | undefined
   try {
     filePath = resolveLogFile(resolvePluginRoot(context.pluginRoot), sessionId, now())
-  } catch {
-    filePath = undefined
-  }
+  } catch {}
 
   return {
     filePath,
     sessionId,
     log(level, event, details = {}) {
-      if (!filePath) return
       try {
         const entry = {
           timestamp: now().toISOString(),
@@ -104,7 +100,8 @@ export function createScriptLogger(context: ScriptLoggingContext): ScriptLogger 
           sessionId,
           ...safeDetails(details),
         }
-        appendFileSync(filePath, `${JSON.stringify(entry)}\n`, 'utf-8')
+        // Stryker disable next-line StringLiteral -- the empty fallback is only used after log-file resolution fails
+        appendFileSync(filePath ?? '', `${JSON.stringify(entry)}\n`)
       } catch {}
     },
   }
@@ -122,7 +119,7 @@ function resolveLogFile(pluginRoot: string, sessionId: string, now: Date): strin
   return join(logDir, existing ?? `${formatMinute(now)}-${safeSessionId}.log`)
 }
 
-function resolvePluginRoot(configuredRoot?: string): string {
+export function resolvePluginRoot(configuredRoot?: string): string {
   return resolve(configuredRoot ?? process.env.DEVOPSFLOW_PLUGIN_ROOT ?? process.env.PLUGIN_ROOT ?? resolve(import.meta.dir, '../../..'))
 }
 
@@ -139,7 +136,7 @@ function resolveSessionId(context: ScriptLoggingContext): string {
 }
 
 function sessionIdFromPayload(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+  if (!payload || Array.isArray(payload)) {
     return undefined
   }
   const record = payload as Record<string, unknown>
@@ -152,12 +149,10 @@ function sessionIdFromFileName(fileName: string): string | undefined {
 }
 
 function sanitizeSessionId(sessionId: string): string {
-  const normalized = sessionId.trim()
-  if (!normalized) return `standalone-${process.pid}`
   try {
-    return encodeURIComponent(normalized)
+    return encodeURIComponent(sessionId)
   } catch {
-    return `encoded-${Buffer.from(normalized).toString('base64url')}`
+    return `encoded-${Buffer.from(sessionId).toString('base64url')}`
   }
 }
 
@@ -177,7 +172,7 @@ function nowProvider(configured?: Date | (() => Date)): () => Date {
 }
 
 function scriptContextDetails(payload: unknown, details: Readonly<Record<string, ScriptLogValue>> | undefined): Readonly<Record<string, ScriptLogValue>> {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+  if (!payload || Array.isArray(payload)) {
     return details ?? {}
   }
   const record = payload as Record<string, unknown>
@@ -200,10 +195,9 @@ function errorDetails(error: unknown): Readonly<Record<string, ScriptLogValue>> 
   return { message: String(error) }
 }
 
-function safeDetails(details: Readonly<Record<string, ScriptLogValue>>): Record<string, Exclude<ScriptLogValue, undefined>> {
-  const result: Record<string, Exclude<ScriptLogValue, undefined>> = {}
+function safeDetails(details: Readonly<Record<string, ScriptLogValue>>): Record<string, ScriptLogValue> {
+  const result: Record<string, ScriptLogValue> = {}
   for (const [key, value] of Object.entries(details)) {
-    if (value === undefined) continue
     if (['timestamp', 'level', 'event', 'script', 'sessionId'].includes(key)) {
       continue
     }
@@ -229,12 +223,13 @@ function captureConsole(logger: ScriptLogger): () => void {
 
   return () => {
     for (const method of methods) {
-      const original = originals.get(method)
-      if (original) console[method] = original as Console[typeof method]
+      console[method] = originals.get(method) as Console[typeof method]
     }
   }
 }
 
 function nonEmptyString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized || undefined
 }

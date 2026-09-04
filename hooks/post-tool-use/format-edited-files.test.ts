@@ -84,6 +84,7 @@ describe('PostToolUse edited-file formatter', () => {
       join(root, 'node_modules', '@biomejs', 'biome', 'bin', 'biome'),
       'format',
       '--write',
+      '--vcs-use-ignore-file=false',
       'source.ts',
     ])
   })
