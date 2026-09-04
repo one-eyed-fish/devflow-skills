@@ -54,4 +54,5 @@ async function main(): Promise<number> {
   const exitCode = emit(findings, options.format)
   return toolFailed ? 2 : exitCode
 }
+// Stryker disable next-line ConditionalExpression -- import.meta.main is an untestable runtime loader boundary
 if (import.meta.main) process.exit(await main())

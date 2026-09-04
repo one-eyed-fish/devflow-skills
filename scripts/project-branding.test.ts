@@ -4,7 +4,7 @@ import { extname, join, relative } from 'node:path'
 
 // biome-ignore lint/style/noNonNullAssertion: import.meta.dir is always defined at runtime
 const ROOT = join(import.meta.dir!, '..')
-const EXCLUDED_DIRECTORIES = new Set(['.git', 'node_modules'])
+const EXCLUDED_DIRECTORIES = new Set(['.git', '.stryker-tmp', 'coverage', 'node_modules', 'reports'])
 const TEXT_EXTENSIONS = new Set(['', '.json', '.md', '.toml', '.ts', '.yml', '.yaml', '.svg'])
 
 const legacySlug = ['dev', 'flow-skills'].join('')

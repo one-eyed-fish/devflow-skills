@@ -147,6 +147,7 @@ function main(): number {
   return 0
 }
 
+// Stryker disable next-line ConditionalExpression -- import.meta.main is an untestable runtime loader boundary
 if (import.meta.main) {
   process.exit(runLoggedScript({ scriptName: 'sync-staged-versions' }, () => main()))
 }

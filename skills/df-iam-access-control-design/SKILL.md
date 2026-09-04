@@ -1,10 +1,10 @@
 ---
 name: df-iam-access-control-design
 description: "设计并评审适用于 REST, GraphQL, gRPC, protobuf and 混合 API surface 的严格 Google Cloud IAM-style 授权 directory, 覆盖 RBAC and ABAC. 当 Codex 需要命名 permission or role, definition role binding and CEL condition, 将 API operation mapping 到授权 check, 迁移旧式冒号分隔 permission, or 防止出现多套授权命名方案时使用."
-version: "0.2.29"
+version: "0.2.30"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.29"
+  version: "0.2.30"
 ---
 
 # IAM Access Control Design

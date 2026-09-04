@@ -1,10 +1,10 @@
 ---
 name: df-ops-dependcy-man
 description: "审计并安全清理 JavaScript, Gradle, Maven and GitHub 依赖, 识别无效, 传递, 重复, 作用域错误, 漂移 or 滥用的声明, 并审查 Dependabot rule."
-version: "0.2.30"
+version: "0.2.31"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.30"
+  version: "0.2.31"
 ---
 
 # Ops Dependcy Man

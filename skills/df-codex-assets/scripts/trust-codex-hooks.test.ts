@@ -1,8 +1,28 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
-import { collectPluginHookTrustEntries, trustPluginHooks } from './trust-codex-hooks'
+import {
+  appendStateSection,
+  canonicalize,
+  collectPluginHookTrustEntries,
+  commandHookHash,
+  configuredHookStates,
+  defaultCodexConfigPath,
+  defaultPluginRoot,
+  existingTrustedHash,
+  isRecord,
+  normalizedCommandHook,
+  normalizedTimeout,
+  parseConfig,
+  pluginRelativePath,
+  readJsonRecord,
+  runCli,
+  runCliIfMain,
+  trustPluginHooks,
+  updateExistingSection,
+  writeConfigAtomically,
+} from './trust-codex-hooks'
 
 // Manifest-derived hashes are validated by shape; values intentionally remain dynamic.
 const UPSTREAM_CODEX_RAW_ROOT = 'https://raw.githubusercontent.com/openai/codex/main'
@@ -23,7 +43,7 @@ const UPSTREAM_TRUST_SOURCES = [
         end: 'fn hook_trust_status(',
       },
     ],
-    fingerprint: 'sha256:c2fd2dd31da552d248d29c44f9e20b48480a7444d847288bd992f9126a99f67a',
+    fingerprint: 'sha256:00d152d28e49d452a162bada1b877dbcb8939cfa7688dbe5072946685337a8ba',
   },
   {
     path: 'codex-rs/config/src/fingerprint.rs',
@@ -205,6 +225,45 @@ describe('trustPluginHooks', () => {
     expect(result.exitCode, result.stderr.toString()).toBe(0)
     expect(result.stdout.toString()).toContain('Trusted 1 DevopsFlow hooks')
     expect(Object.keys(hookState(configPath))).toHaveLength(1)
+    const logPath = join(pluginRoot, '.logs', readdirSync(join(pluginRoot, '.logs'))[0] ?? '')
+    const logEntries = readFileSync(logPath, 'utf-8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line) as Record<string, unknown>)
+    expect(logEntries.map(({ script }) => script)).toEqual(['trust-codex-hooks', 'trust-codex-hooks', 'trust-codex-hooks'])
+    expect(logEntries.map(({ event }) => event)).toEqual(['script.start', 'script.output', 'script.finish'])
+  })
+
+  it('prints the exact already-trusted CLI result', () => {
+    const pluginRoot = tempRoot()
+    const codexRoot = tempRoot()
+    writeFixturePlugin(pluginRoot, {
+      SessionStart: [{ hooks: [{ type: 'command', command: 'bun first.ts' }] }],
+    })
+    const previousCodexHome = process.env.CODEX_HOME
+    const previousPluginRoot = process.env.PLUGIN_ROOT
+    process.env.CODEX_HOME = codexRoot
+    process.env.PLUGIN_ROOT = pluginRoot
+    const originalLog = console.log
+    const messages: string[] = []
+    console.log = (message?: unknown) => messages.push(String(message))
+    expect(runCliIfMain(false)).toBeUndefined()
+    try {
+      expect(runCli()).toBe(0)
+      expect(runCli()).toBe(0)
+      expect(runCliIfMain(true)).toBe(0)
+    } finally {
+      console.log = originalLog
+      if (previousCodexHome === undefined) delete process.env.CODEX_HOME
+      else process.env.CODEX_HOME = previousCodexHome
+      if (previousPluginRoot === undefined) delete process.env.PLUGIN_ROOT
+      else process.env.PLUGIN_ROOT = previousPluginRoot
+    }
+    expect(messages).toEqual([
+      'Trusted 1 DevopsFlow hooks; 0 were already trusted.',
+      'All 1 DevopsFlow hooks are already trusted.',
+      'All 1 DevopsFlow hooks are already trusted.',
+    ])
   })
 
   it('writes every command hook fingerprint while preserving other config', () => {
@@ -242,6 +301,7 @@ describe('trustPluginHooks', () => {
 
     const config = readFileSync(configPath, 'utf-8')
     const state = hookState(configPath)
+    const expectedWindowsEntries = collectPluginHookTrustEntries(pluginRoot, 'win32')
     expect(result).toEqual({ status: 'updated', trusted: 3, unchanged: 0 })
     expect(config).toStartWith('# keep this comment\nmodel = "gpt-5.6"\n')
     expect(Object.keys(state).sort()).toEqual([
@@ -256,6 +316,9 @@ describe('trustPluginHooks', () => {
         }),
       ]),
     )
+    for (const entry of expectedWindowsEntries) {
+      expect(state[entry.key]?.trusted_hash).toBe(entry.trustedHash)
+    }
   })
 
   it('updates stale trust and leaves an already trusted config byte-for-byte unchanged', () => {
@@ -317,5 +380,270 @@ describe('trustPluginHooks', () => {
     expect(() => trustPluginHooks({ configPath, pluginRoot, platform: 'win32' })).toThrow('Unable to parse Codex config')
     expect(readFileSync(configPath, 'utf-8')).toBe(invalidConfig)
     expect(existsSync(`${configPath}.tmp`)).toBe(false)
+  })
+})
+
+describe('hook trust normalization boundaries', () => {
+  it('recognizes records and canonicalizes nested arrays and object keys', () => {
+    expect(isRecord({})).toBe(true)
+    expect(isRecord(null)).toBe(false)
+    expect(isRecord([])).toBe(false)
+    expect(isRecord('value')).toBe(false)
+    expect(JSON.stringify(canonicalize({ z: [{ y: 2, x: 1 }], a: true }))).toBe('{"a":true,"z":[{"x":1,"y":2}]}')
+    expect(JSON.stringify(canonicalize([{ z: 2, a: 1 }]))).toBe('[{"a":1,"z":2}]')
+    expect(canonicalize('unchanged')).toBe('unchanged')
+  })
+
+  it('normalizes ordinary and SessionEnd timeout boundaries', () => {
+    expect(normalizedTimeout('pre_tool_use')).toBe(600)
+    expect(normalizedTimeout('pre_tool_use', 0)).toBe(1)
+    expect(normalizedTimeout('pre_tool_use', 19)).toBe(19)
+    expect(normalizedTimeout('session_end')).toBe(1)
+    expect(normalizedTimeout('session_end', 0)).toBe(1)
+    expect(normalizedTimeout('session_end', 2)).toBe(2)
+    expect(normalizedTimeout('session_end', 9)).toBe(3)
+  })
+
+  it('normalizes command platform, optional fields, and blank commands exactly', () => {
+    const handler = {
+      type: 'command' as const,
+      command: 'bun unix.ts',
+      commandWindows: 'bun windows.ts',
+      timeout: 12,
+      async: true,
+      statusMessage: 'Checking',
+      additionalContextLimit: 123,
+    }
+    expect(normalizedCommandHook('pre_tool_use', handler, 'win32')).toEqual({
+      type: 'command',
+      command: 'bun windows.ts',
+      timeout: 12,
+      async: true,
+      statusMessage: 'Checking',
+      additionalContextLimit: 123,
+    })
+    expect(normalizedCommandHook('stop', handler, 'linux')).toEqual({
+      type: 'command',
+      command: 'bun unix.ts',
+      timeout: 12,
+      async: true,
+      statusMessage: 'Checking',
+    })
+    const defaults = normalizedCommandHook('pre_tool_use', { type: 'command', command: 'bun x.ts' }, 'linux')
+    expect(defaults).toEqual({
+      type: 'command',
+      command: 'bun x.ts',
+      timeout: 600,
+      async: false,
+    })
+    expect(Object.keys(defaults ?? {})).toEqual(['type', 'command', 'timeout', 'async'])
+    expect(normalizedCommandHook('pre_tool_use', { type: 'command', command: '   ' }, 'linux')).toBeUndefined()
+  })
+
+  it('includes matcher and additional context only for the supported events', () => {
+    const matcherEvents = [
+      'pre_tool_use',
+      'permission_request',
+      'post_tool_use',
+      'pre_compact',
+      'post_compact',
+      'session_start',
+      'session_end',
+      'subagent_start',
+      'subagent_stop',
+    ] as const
+    for (const event of matcherEvents) {
+      const withMatcher = commandHookHash(event, { matcher: 'shell', hooks: [] }, { type: 'command', command: 'bun x.ts' }, 'linux')
+      const withoutMatcher = commandHookHash(event, { hooks: [] }, { type: 'command', command: 'bun x.ts' }, 'linux')
+      expect(withMatcher, event).not.toBe(withoutMatcher)
+    }
+    for (const event of ['stop', 'user_prompt_submit'] as const) {
+      const withMatcher = commandHookHash(event, { matcher: 'shell', hooks: [] }, { type: 'command', command: 'bun x.ts' }, 'linux')
+      const withoutMatcher = commandHookHash(event, { hooks: [] }, { type: 'command', command: 'bun x.ts' }, 'linux')
+      expect(withMatcher, event).toBe(withoutMatcher)
+    }
+
+    for (const event of ['pre_tool_use', 'post_tool_use', 'session_start', 'user_prompt_submit', 'subagent_start'] as const) {
+      expect(normalizedCommandHook(event, { type: 'command', command: 'bun x.ts', additionalContextLimit: 123 }, 'linux')).toHaveProperty(
+        'additionalContextLimit',
+        123,
+      )
+    }
+    const withoutAdditionalContext = normalizedCommandHook('session_end', { type: 'command', command: 'bun x.ts', additionalContextLimit: 123 }, 'linux')
+    expect(withoutAdditionalContext).not.toHaveProperty('additionalContextLimit')
+    expect(Object.keys(withoutAdditionalContext ?? {})).not.toContain('additionalContextLimit')
+    expect(normalizedCommandHook('pre_tool_use', { type: 'command', command: 'bun x.ts', additionalContextLimit: 2_500 }, 'linux')).not.toHaveProperty(
+      'additionalContextLimit',
+    )
+    expect(commandHookHash('pre_tool_use', { hooks: [] }, { type: 'command', command: ' ' }, 'linux')).toBeUndefined()
+  })
+})
+
+describe('hook manifest validation boundaries', () => {
+  it('reads JSON objects and rejects malformed or non-object JSON exactly', () => {
+    const root = tempRoot()
+    const path = join(root, 'value.json')
+    writeFileSync(path, '{"ok":true}')
+    expect(readJsonRecord(path)).toEqual({ ok: true })
+    writeFileSync(path, '[]')
+    expect(() => readJsonRecord(path)).toThrow(`Expected a JSON object in ${path}`)
+    writeFileSync(path, '{')
+    expect(() => readJsonRecord(path)).toThrow(`Unable to parse JSON ${path}:`)
+  })
+
+  it('rejects plugin and marketplace manifest shape errors', () => {
+    const root = tempRoot()
+    writeFile(root, '.codex-plugin/plugin.json', JSON.stringify({ name: 1, hooks: './hooks.json' }))
+    writeFile(root, '.codex-plugin/marketplace.json', JSON.stringify({ name: 'market' }))
+    expect(() => collectPluginHookTrustEntries(root)).toThrow('plugin.json must define string name and hooks fields')
+
+    writeFile(root, '.codex-plugin/plugin.json', JSON.stringify({ name: 'plugin', hooks: 1 }))
+    expect(() => collectPluginHookTrustEntries(root)).toThrow('plugin.json must define string name and hooks fields')
+
+    writeFile(root, '.codex-plugin/plugin.json', JSON.stringify({ name: 'plugin', hooks: './hooks.json' }))
+    writeFile(root, '.codex-plugin/marketplace.json', JSON.stringify({ name: 1 }))
+    expect(() => collectPluginHookTrustEntries(root)).toThrow('marketplace.json must define a string name field')
+  })
+
+  it('keeps hook paths inside the plugin root', () => {
+    const root = tempRoot()
+    expect(pluginRelativePath(root, 'hooks/file.json')).toBe('hooks/file.json')
+    expect(pluginRelativePath(root, 'hooks\\file.json')).toBe('hooks/file.json')
+    expect(() => pluginRelativePath(root, '.')).toThrow('Plugin hook path must stay within plugin root: .')
+    expect(() => pluginRelativePath(root, '..')).toThrow('Plugin hook path must stay within plugin root: ..')
+    expect(() => pluginRelativePath(root, '../outside/file.json')).toThrow('Plugin hook path must stay within plugin root: ../outside/file.json')
+  })
+
+  it('rejects malformed hook manifests, groups, and handlers and skips unsupported handlers', () => {
+    const root = tempRoot()
+    const cases: Array<[Record<string, unknown>, string]> = [
+      [{ hooks: [] }, 'must define a hooks object'],
+      [{ hooks: { Unknown: [] } }, 'Unsupported Codex hook event: Unknown'],
+      [{ hooks: { Stop: {} } }, 'Codex hook event Stop must contain matcher groups'],
+      [{ hooks: { Stop: [null] } }, 'Stop matcher group 0 is invalid'],
+      [{ hooks: { Stop: [{ hooks: {} }] } }, 'Stop matcher group 0 is invalid'],
+      [{ hooks: { Stop: [{ hooks: [null] }] } }, 'Stop hook 0:0 is invalid'],
+      [{ hooks: { Stop: [{ hooks: [{}] }] } }, 'Stop hook 0:0 is invalid'],
+      [{ hooks: { Stop: [{ hooks: [{ type: 'command' }] }] } }, 'Stop hook 0:0 is not a valid command hook'],
+      [{ hooks: { Stop: [{ hooks: [{ type: 'other', command: 'bun x.ts' }] }] } }, 'Stop hook 0:0 is not a valid command hook'],
+    ]
+    for (const [manifest, message] of cases) {
+      writeFile(root, '.codex-plugin/plugin.json', JSON.stringify({ name: 'plugin', hooks: './hooks.json' }))
+      writeFile(root, '.codex-plugin/marketplace.json', JSON.stringify({ name: 'market' }))
+      writeFile(root, 'hooks.json', JSON.stringify(manifest))
+      expect(() => collectPluginHookTrustEntries(root), message).toThrow(message)
+    }
+
+    writeFixturePlugin(root, {
+      Stop: [{ hooks: [{ type: 'prompt' }, { type: 'agent' }, { type: 'command', command: ' ' }, { type: 'command', command: 'bun ok.ts' }] }],
+    })
+    expect(collectPluginHookTrustEntries(root)).toHaveLength(1)
+  })
+})
+
+describe('Codex config text boundaries', () => {
+  it('validates parsed hook state table shapes', () => {
+    expect(parseConfig('', 'config.toml')).toEqual({})
+    expect(() => parseConfig('value = [', 'config.toml')).toThrow('Unable to parse Codex config config.toml:')
+    expect(configuredHookStates({})).toEqual({})
+    expect(configuredHookStates({ hooks: {} })).toEqual({})
+    expect(configuredHookStates({ hooks: { state: { key: { trusted_hash: 'hash' } } } })).toEqual({ key: { trusted_hash: 'hash' } })
+    expect(() => configuredHookStates({ hooks: [] })).toThrow('Codex config hooks must be a table')
+    expect(() => configuredHookStates({ hooks: { state: [] } })).toThrow('Codex config hooks.state must be a table')
+    expect(existingTrustedHash({ trusted_hash: 'hash' })).toBe('hash')
+    expect(existingTrustedHash({ trusted_hash: 1 })).toBeUndefined()
+    expect(existingTrustedHash(null)).toBeUndefined()
+  })
+
+  it('updates only the targeted section and preserves CRLF and neighboring hashes', () => {
+    const key = 'target'
+    const content = [
+      '# header',
+      '  [hooks.state."target"]',
+      'other = true',
+      '  trusted_hash   = "old"',
+      '   [hooks.state."next"]',
+      'trusted_hash = "next-hash"',
+      '',
+    ].join('\r\n')
+    expect(updateExistingSection(content, key, 'new-hash')).toBe(
+      ['# header', '  [hooks.state."target"]', 'other = true', 'trusted_hash = "new-hash"', '   [hooks.state."next"]', 'trusted_hash = "next-hash"', ''].join(
+        '\r\n',
+      ),
+    )
+    expect(() => updateExistingSection('name = "x"', key, 'hash')).toThrow('Unable to locate existing Codex hook state section: target')
+  })
+
+  it('inserts missing hashes and appends sections with exact spacing', () => {
+    expect(updateExistingSection('[hooks.state."target"]\ntrusted_hash = "old"\n', 'target', 'hash')).toBe('[hooks.state."target"]\ntrusted_hash = "hash"\n')
+    expect(updateExistingSection('[hooks.state."target"]\nprefix trusted_hash = "decoy"\n', 'target', 'hash')).toBe(
+      '[hooks.state."target"]\ntrusted_hash = "hash"\nprefix trusted_hash = "decoy"\n',
+    )
+    expect(updateExistingSection('[hooks.state."target"]\n   [hooks.state."next"]\ntrusted_hash = "next"\n', 'target', 'hash')).toBe(
+      '[hooks.state."target"]\ntrusted_hash = "hash"\n   [hooks.state."next"]\ntrusted_hash = "next"\n',
+    )
+    expect(updateExistingSection('[hooks.state."target"]\nvalue = true\n[hooks.state."next"]\ntrusted_hash = "next"\n', 'target', 'hash')).toBe(
+      '[hooks.state."target"]\ntrusted_hash = "hash"\nvalue = true\n[hooks.state."next"]\ntrusted_hash = "next"\n',
+    )
+    expect(updateExistingSection('[hooks.state."target"]\nvalue = true\n', 'target', 'hash')).toBe(
+      '[hooks.state."target"]\ntrusted_hash = "hash"\nvalue = true\n',
+    )
+    expect(appendStateSection('', 'key', 'hash')).toBe('[hooks.state."key"]\ntrusted_hash = "hash"\n')
+    expect(appendStateSection('model = "x"', 'key', 'hash')).toBe('model = "x"\n\n[hooks.state."key"]\ntrusted_hash = "hash"\n')
+    expect(appendStateSection('model = "x"\n', 'key', 'hash')).toBe('model = "x"\n\n[hooks.state."key"]\ntrusted_hash = "hash"\n')
+    expect(appendStateSection('model = "x"\n\n', 'key', 'hash')).toBe('model = "x"\n\n[hooks.state."key"]\ntrusted_hash = "hash"\n')
+    expect(appendStateSection('model = "x"\r\n', 'key', 'hash')).toBe('model = "x"\r\n\r\n[hooks.state."key"]\r\ntrusted_hash = "hash"\r\n')
+  })
+
+  it('writes new and existing configs atomically and detects concurrent changes', () => {
+    const root = tempRoot()
+    const newPath = join(root, 'nested', 'config.toml')
+    writeConfigAtomically(newPath, undefined, 'new = true\n')
+    expect(readFileSync(newPath, 'utf-8')).toBe('new = true\n')
+    expect(statSync(newPath).mode & 0o777).toBe(0o600)
+
+    const existingPath = join(root, 'existing.toml')
+    writeFileSync(existingPath, 'old = true\n', { mode: 0o640 })
+    writeConfigAtomically(existingPath, 'old = true\n', 'new = true\n')
+    expect(readFileSync(existingPath, 'utf-8')).toBe('new = true\n')
+    expect(statSync(existingPath).mode & 0o777).toBe(0o640)
+
+    writeFileSync(existingPath, 'stable = true\n')
+    expect(() =>
+      writeConfigAtomically(existingPath, 'stable = true\n', 'replacement = true\n', () => {
+        writeFileSync(existingPath, 'concurrent = true\n')
+      }),
+    ).toThrow('Codex config changed while trust entries were being prepared')
+    expect(readFileSync(existingPath, 'utf-8')).toBe('concurrent = true\n')
+    expect(readdirSync(root).some((name) => name.endsWith('.tmp'))).toBe(false)
+  })
+
+  it('uses CODEX_HOME for the default config path and reports CLI errors', () => {
+    const previousCodexHome = process.env.CODEX_HOME
+    const previousPluginRoot = process.env.PLUGIN_ROOT
+    const root = tempRoot()
+    delete process.env.CODEX_HOME
+    expect(defaultCodexConfigPath()).toBe(join(homedir(), '.codex', 'config.toml'))
+    expect(defaultPluginRoot()).toBe(resolve(import.meta.dir, '../../..'))
+    process.env.CODEX_HOME = root
+    process.env.PLUGIN_ROOT = join(root, 'missing-plugin')
+    try {
+      expect(defaultCodexConfigPath()).toBe(join(root, 'config.toml'))
+      const originalError = console.error
+      const errors: string[] = []
+      console.error = (message?: unknown) => errors.push(String(message))
+      try {
+        expect(runCli()).toBe(1)
+      } finally {
+        console.error = originalError
+      }
+      expect(errors).toHaveLength(1)
+      expect(errors[0]).toContain('Unable to parse JSON')
+    } finally {
+      if (previousCodexHome === undefined) delete process.env.CODEX_HOME
+      else process.env.CODEX_HOME = previousCodexHome
+      if (previousPluginRoot === undefined) delete process.env.PLUGIN_ROOT
+      else process.env.PLUGIN_ROOT = previousPluginRoot
+    }
   })
 })

@@ -58,10 +58,12 @@ export function validateIdentifierLines(text: string, kind: IdentifierKind): Ide
 }
 
 function main(): number {
+  // Stryker disable next-line MethodExpression -- CLI arguments intentionally exclude the Bun executable and script path
   const args = Bun.argv.slice(2)
   let kind: IdentifierKind | undefined
   let inputPath: string | undefined
 
+  // Stryker disable next-line EqualityOperator -- the loop bound's extra no-op iteration is a runtime boundary detail
   for (let index = 0; index < args.length; index++) {
     if (args[index] === '--kind') {
       const candidate = args[++index]

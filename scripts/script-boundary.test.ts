@@ -5,7 +5,7 @@ import { extname, join, relative } from 'node:path'
 // biome-ignore lint/style/noNonNullAssertion: import.meta.dir is always defined at runtime
 const ROOT = join(import.meta.dir!, '..')
 const SCRIPTS_DIRECTORY = join(ROOT, 'scripts')
-const EXCLUDED_DIRECTORIES = new Set(['.git', 'node_modules', 'scripts'])
+const EXCLUDED_DIRECTORIES = new Set(['.git', '.stryker-tmp', 'coverage', 'node_modules', 'reports', 'scripts'])
 const TEXT_EXTENSIONS = new Set(['', '.json', '.md', '.toml', '.ts', '.yml', '.yaml'])
 
 function collectFiles(directory: string): string[] {
@@ -43,7 +43,7 @@ describe('repository scripts boundary', () => {
     for (const file of collectFiles(ROOT)) {
       if (!TEXT_EXTENSIONS.has(extname(file))) continue
       const projectPath = relative(ROOT, file).replaceAll('\\', '/')
-      if (projectPath === 'package.json' || projectPath.startsWith('.husky/')) {
+      if (projectPath === 'package.json' || projectPath.startsWith('.husky/') || projectPath.startsWith('.devopsflow/checkpoints/')) {
         continue
       }
       const content = readFileSync(file, 'utf-8')

@@ -1,5 +1,8 @@
 node_modules/
 *.tsbuildinfo
 dist/
+coverage/
+reports/mutation/
+.stryker-tmp/
 .logs/
 .obsidian/

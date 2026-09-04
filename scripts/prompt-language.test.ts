@@ -5,7 +5,7 @@ import { basename, dirname, extname, join, relative, resolve } from 'node:path'
 // biome-ignore lint/style/noNonNullAssertion: import.meta.dir is always defined at runtime
 const ROOT = join(import.meta.dir!, '..')
 const SKILLS_ROOT = join(ROOT, 'skills')
-const EXCLUDED_DIRECTORIES = new Set(['.git', 'node_modules'])
+const EXCLUDED_DIRECTORIES = new Set(['.git', '.stryker-tmp', 'coverage', 'node_modules', 'reports'])
 
 const ENGLISH_FUNCTION_WORDS = new Set([
   'a',
