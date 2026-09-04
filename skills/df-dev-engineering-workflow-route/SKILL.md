@@ -1,10 +1,10 @@
 ---
 name: df-dev-engineering-workflow-route
 description: "强制 development 工程 workflow route. 在 software development, refactor, 缺陷 fix, domain 建模, Glue Coding, API or 授权设计, code 审查, 验证, 分支收尾 or commit ready 开始时, 对 task category 并选择必需的 skills."
-version: "0.2.30"
+version: "0.2.31"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.30"
+  version: "0.2.31"
 ---
 
 # Dev Engineering Workflow Route
