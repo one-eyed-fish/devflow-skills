@@ -19,8 +19,8 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 - [x] R1 - 从 `main` 创建 `codex/release-v0.2.37`，将 package、Codex plugin、Cursor plugin 和 agent markers 同步到 `0.2.37`。
 - [x] R2 - 递增 `df-codex-assets` skill 版本至 `0.2.40`，并重新计算 managed Codex asset 与 subagent hashes。
 - [x] R3 - 运行本地 release gate。`bun test` 中的 `Codex hook trust hash > matches upstream on main` 用例为既有上游漂移失败（在干净 `main` 亦失败），不属于本次发布回归。
-- [ ] R4 - 提交并推送 `codex/release-v0.2.37`，通过 PR 合入 `main`。
-- [ ] R5 - 创建 `v0.2.37` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。
+- [x] R4 - 提交并推送 `codex/release-v0.2.37`，通过 PR 合入 `main`。PR: https://github.com/LiTeXz/devopsflow/pull/94
+- [x] R5 - 创建 `v0.2.37` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。Release: https://github.com/LiTeXz/devopsflow/releases/tag/v0.2.37
 
 ## Releases And Tags Conventions
 
