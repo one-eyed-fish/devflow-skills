@@ -1,10 +1,10 @@
 ---
 name: df-dev-tdd
-description: "适用于全新 feature development, 缺陷 fix, 行为保持型 refactor, 特征 tests 以及先刻画后 fix work 的纯 TDD workflow. 当 Codex 需要以 tests 优先的纪律从零构建新行为, or 在不引起行为漂移的前提下修改现有 code 时使用. 适用于各种 language and 架构. 不要用于技术栈专用分层 rule, 仅文档 edit, 简单格式调整, or 不期望产生可 execution 行为的纯探索性原型."
-version: "0.2.32"
+description: "适用于全新 feature development, 缺陷 fix, 行为保持型 refactor, 特征 tests 以及先刻画后 fix work 的纯 TDD workflow. 当 Codex 需要以 tests 优先的纪律从零构建新行为, or 在不引起行为漂移的前提下修改现有 code 时使用. 适用于各种 language and 架构. 当存在 Gherkin .feature 行为契约时, 将每个 Scenario 纳入 tests 范围, 作为 RED-GREEN 切片与验收追踪的锚点. 不要用于技术栈专用分层 rule, 仅文档 edit, 简单格式调整, or 不期望产生可 execution 行为的纯探索性原型."
+version: "0.2.33"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.32"
+  version: "0.2.33"
 ---
 
 # Dev TDD
@@ -238,6 +238,19 @@ if 答案不明确, 在修改生产 code 前继续阅读 code or 添加 tests.
 - if 断言含糊, 先 write 期望断言, 再围绕行为塑造 tests 数据.
 - if 首个 tests 需要大范围基础设施, 选择更小的可观察行为 or 更稳定的边界.
 
+## Feature-Driven TDD
+
+当 target project 存在 `df-dev-bdd` 产出的 Gherkin `.feature` 时, `.feature` 是行为与验收的契约基准, TDD 应把每个 `Scenario` 纳入 tests 范围:
+
+- 一个 `Scenario` 对应一个可观察行为切片; 一个 `Feature` 通常拆成多个 RED-GREEN 切片. 先写会失败的 step definition 或场景驱动单元 tests, 再最小实现到 GREEN.
+- Given 对应 tests 前置/fixture 与 arrange, When 对应在稳定边界上执行的动作, Then 对应可直接断言的 observable result.
+- 保留场景与 `@req-<id>` 标签的可追踪关系, 贯穿切片, todo list 与最终验证; 不要凭空发明与 `.feature` 无关的测试结构.
+- Boundary Discovery Burst 的 counterexample 应与 `.feature` 中的例外, 拒绝, 冲突, 幂等, 过期等场景一致, 避免边界扫描脱离契约.
+- 达到 GREEN 后再 refactor; refactor 不得改变 `.feature` 中已冻结的行为契约.
+- `.feature` 变更即需求变更: 更新场景后让受影响 tests 重新经历 RED(必要时先调整断言), 再补最小实现.
+
+完整规则参见 [feature-driven-tdd.md](references/feature-driven-tdd.md).
+
 ## Completion Criteria
 
 - 每个新增 or 修改的关键 tests 都在生产修改后经历了 RED 再到 GREEN.
@@ -255,6 +268,7 @@ if 答案不明确, 在修改生产 code 前继续阅读 code or 添加 tests.
 - [boundary-discovery.md](references/boundary-discovery.md): 在 RED after 进行受约束反例脑暴, category candidate and 保持 single implementation slice.
 - [hook-protocol.md](references/hook-protocol.md): 半自动 TDD 护栏 script 的字段, 状态 and 阻断 rule.
 - [characterization-tests.md](references/characterization-tests.md): 如何为复杂现有行为 write 特征 tests.
+- [feature-driven-tdd.md](references/feature-driven-tdd.md): 当存在 Gherkin `.feature` 时, 将每个 Scenario 纳入 tests 范围并驱动 RED-GREEN 切片.
 - [checklists.md](references/checklists.md): pre edit, 完成前, tests 质量 and 边界异味 check.
 - [eval-cases.md](references/eval-cases.md): 迭代此 skill 时使用的失败样例 and 预期护栏行为.
 - [anti-patterns.md](references/anti-patterns.md): 迭代此 skill 时应拒绝 or 纠正的常见 TDD 失败模式.

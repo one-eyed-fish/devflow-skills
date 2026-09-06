@@ -1,4 +1,4 @@
 interface:
   display_name: "Ddd To Tdd Handoff"
-  short_description: "将已确认的 DDD event 风暴产物 and 需求可追踪关系转换为可 execution, and language 无关的 TDD implementation 切片. 在 df-ddd-event-storming-design 已产出并确认需求, 命令, event, 聚合, 策略, 不变量, 读模型 or 关系, 且 Codex 需要 tests, implementation 计划 or development 顺序时使用."
+  short_description: "将已确认的 DDD event 风暴产物 and 需求可追踪关系转换为可 execution, and language 无关的 TDD implementation 切片. 在 df-ddd-event-storming-design 已产出并确认需求, 命令, event, 聚合, 策略, 不变量, 读模型 or 关系, 且 Codex 需要 tests, implementation 计划 or development 顺序时使用. 存在 Gherkin .feature 时, 以其中 Scenario 与 @req- 标签作为切片与验收锚点."
   default_prompt: "使用 $df-ddd-to-tdd-handoff 将已确认的 DDD 设计 and 需求可追踪关系转换为小型, and language 无关的 TDD implementation 切片."

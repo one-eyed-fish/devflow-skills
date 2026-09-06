@@ -1,10 +1,10 @@
 ---
 name: df-dev-bdd
-description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求转化为可讨论、可验收、可自动化执行的行为场景。适用于需要统一业务语言、协作澄清需求、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
-version: "0.2.36"
+description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求先行成文为 Gherkin DSL 的 .feature 文件，作为产品经理、开发者与项目经理之间可讨论、可验收、可自动化执行的行为契约。适用于新需求对齐、统一业务语言、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
+version: "0.2.37"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.36"
+  version: "0.2.37"
 ---
 
 # Behavior-Driven Development
@@ -14,12 +14,26 @@ metadata:
 ## Core Principles
 
 - 先描述用户、业务角色或外部系统希望达成的结果，再讨论实现方式。
+- 统一业务契约：行为用 Gherkin DSL 成文为 `.feature` 文件，纯文本可被业务与项目经理评审，也能被多数语言测试框架（Cucumber 家族、SpecFlow、pytest-bdd、Jest-Cucumber 等）直接绑定为自动化验收测试。
+- 新需求一进来，最先做的是把行为梳理成 `.feature` 并成文，在评审、规划与技术实现前完成三方对齐，而不是先画页面、建表或写代码。
 - 使用统一的业务 language；遇到术语歧义时先澄清，不用技术名词掩盖业务决策。
 - 场景应表达一个独立行为和一个主要结果，避免把多个流程塞进一个场景。
 - 优先验证 observable behavior，例如结果、状态变化、业务事件、错误语义、权限结果或外部副作用。
 - Given 描述已成立的业务前置事实，When 描述一个业务动作，Then 描述可观察结果。
 - 例外、拒绝、冲突、重复请求、取消、过期和外部失败等重要规则必须有明确场景。
 - 场景是需求和自动化测试之间的契约，不是把 implementation detail 暴露给业务参与者的地方。
+
+## Requirement-First Contract
+
+新需求到来时，最先成文的必须是 `.feature`，而不是实现草图：
+
+- 在需求评审、迭代规划和技术设计前，用 `.feature` 把待办行为、参与者和验收场景写清楚，让产品经理、项目经理与开发者对照同一份契约确认。
+- 为每条需求分配稳定 ID，并以 `@req-<id>` 标签标注在 `Feature` 或 `Scenario` 上，供后续实现切片与验收追踪。
+- 一个 `Feature` 只承载一个业务能力；多个独立能力拆成多个 `.feature`，避免一份契约同时决策多件事。
+- 三方逐场景确认通过后再冻结；任何一方对场景含义有分歧都视为未对齐，先澄清再进入实现。
+- 若业务边界、participant 或生命周期仍不清，先使用 `df-dev-ddd` 或 `df-dev-ddd-event-storming-design`，再回头补全场景，不要直接写完整 `.feature`。
+
+落地细节、写作规则与常见误区见 [feature-authoring.md](references/feature-authoring.md)。
 
 ## Workflow
 
@@ -51,7 +65,7 @@ metadata:
 
 ## Scenario Format
 
-使用以下结构；正文使用业务语言，避免描述内部调用顺序：
+业务行为契约统一使用 Gherkin DSL 书写为 `.feature` 文件。它是纯文本、可被业务与项目经理评审，又能被多数语言的测试框架（Cucumber 家族、SpecFlow、pytest-bdd、behave、Jest-Cucumber 等）直接绑定为自动化验收测试：同一份文件既是需求对齐依据，也是功能点。正文使用业务语言，避免描述内部调用顺序：
 
 ```gherkin
 Feature: <业务能力>
@@ -67,7 +81,10 @@ Feature: <业务能力>
     And <其他必须成立的结果>
 ```
 
-如果项目不使用 Gherkin，保留相同语义，使用 Markdown、测试名称或项目既有格式表达。
+- 为每条需求分配稳定 ID 并用 `@req-<id>` 标签标注，供场景、实现切片与验收追踪。
+- 每个 `.feature` 保持最小可读且可执行，不要在文件中重复整份产品说明书。
+- 「未实现的 step definition」或「行为尚不存在导致断言失败」是目标行为的 RED 证据，可交给 `df-dev-tdd` 继续。
+- 若 target project 明确禁止使用 Gherkin，才回退到项目既有格式，并在交接中说明原因与开放风险。
 
 ## Scenario Review
 
@@ -86,13 +103,14 @@ Feature: <业务能力>
 
 - `df-dev-ddd`：处理 BDD 场景背后的领域边界、participant 和业务规则。
 - `df-dev-ddd-event-storming-design`：在领域语言、事件或 Aggregate 边界不清时进行建模。
-- `df-dev-tdd`：将已定义行为执行为 tests-first development。
-- `df-dev-ddd-to-tdd-handoff`：将已确认的 DDD 产物转换为可执行的 TDD slices。
+- `df-dev-tdd`：将 `.feature` 场景执行 tests-first development，把每个 Scenario 纳入测试范围。
+- `df-dev-ddd-to-tdd-handoff`：将已确认的 DDD 产物转换为可执行的 TDD slices，并以 `.feature` 场景作为验收锚点。
 - `df-verification-before-completion`：验证场景覆盖、测试结果和剩余风险。
 
 ## Non-Negotiable Rules
 
 - 不要把 BDD 简化为先写 implementation 再补测试。
+- 新需求在评审与实现前，先以 `.feature` 成文并明确验收场景；不要把未成文的口头需求当作最终事实。
 - 不要使用无法观察的内部状态或调用次数作为唯一 Then 断言。
 - 不要让一个场景同时承载多个独立业务决策。
 - 不要为了让场景通过而弱化业务断言。
