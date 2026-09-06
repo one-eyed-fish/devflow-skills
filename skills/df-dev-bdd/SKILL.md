@@ -1,10 +1,10 @@
 ---
 name: df-dev-bdd
 description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求先行成文为 Gherkin DSL 的 .feature 文件，作为产品经理、开发者与项目经理之间可讨论、可验收、可自动化执行的行为契约。适用于新需求对齐、统一业务语言、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
-version: "0.2.37"
+version: "0.2.38"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.37"
+  version: "0.2.38"
 ---
 
 # Behavior-Driven Development
@@ -33,7 +33,21 @@ metadata:
 - 三方逐场景确认通过后再冻结；任何一方对场景含义有分歧都视为未对齐，先澄清再进入实现。
 - 若业务边界、participant 或生命周期仍不清，先使用 `df-dev-ddd` 或 `df-dev-ddd-event-storming-design`，再回头补全场景，不要直接写完整 `.feature`。
 
-落地细节、写作规则与常见误区见 [feature-authoring.md](references/feature-authoring.md)。
+落地细节、写作规则与常见误区见 [feature-authoring.md](references/feature-authoring.md)；TypeScript 项目的文件组织与 Bun Test、Vitest 选择见 [typescript-project.md](references/typescript-project.md)。
+
+## Executable Contract Validator
+
+本 skill 同时提供一个轻量 TypeScript 校验器，用于在 Cucumber 执行前检查 `.feature` 是否满足最小行为契约。它不替代 Cucumber 的 step execution，而是检查需求可追踪性、Feature 用户价值叙述、Scenario 边界以及 Given/When/Then 顺序。
+
+在已安装的 DevopsFlow skill 根目录中执行：
+
+```bash
+bun scripts/bdd.ts --input path/to/behavior.feature
+```
+
+校验器要求每个 Feature 或每个 Scenario 能通过 `@req-<id>` 追踪到需求；Feature 必须包含 `As a`、`I want`、`So that` 叙述；每个 Scenario 必须包含 Given、恰好一个 When 和 Then，并按该顺序表达一个主要行为。校验通过时返回退出码 `0`，否则将具体错误写入标准错误并返回退出码 `1`。
+
+实现、单元测试和可执行的 Cucumber 契约位于 skill 安装目录的 [bdd.ts](scripts/bdd.ts)、[bdd.test.ts](scripts/bdd.test.ts)、[bdd.feature](scripts/bdd.feature)、[bdd.steps.ts](scripts/bdd.steps.ts) 和 [bdd.feature.test.ts](scripts/bdd.feature.test.ts)。维护 DevopsFlow repository 时，这些文件位于 `skills/df-dev-bdd/scripts/`；安装后请以实际 skill 根目录为准。
 
 ## Workflow
 
