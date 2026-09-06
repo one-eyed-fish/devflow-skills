@@ -10,6 +10,7 @@ describe('routeTask', () => {
       [Skill.EngineeringStandards]: 'The task is standards-sensitive and requires authoritative engineering guidance.',
       [Skill.ResumableWorkflowGuard]: 'The task is long-running, spans multiple stages, or requires resumable execution.',
       [Skill.DomainEventStormingDesign]: 'Domain language, business rules, or ownership boundaries require clarification.',
+      [Skill.Bdd]: 'New requirement behavior must be captured in a Gherkin .feature contract before implementation.',
       [Skill.GlueCoding]: 'The implementation should reuse established repository patterns and local project materials.',
       [Skill.IamAccessControlDesign]: 'The task involves permissions, roles, RBAC, ABAC, or API authorization mapping.',
       [Skill.GoogleAipApiDesign]: 'The task involves resource-oriented API or transport design.',
@@ -76,6 +77,7 @@ describe('routeTask', () => {
 
     expect(decision.risks).toEqual([RiskDimension.TestEffectiveness])
     expect(decision.executionOrder).toEqual([
+      Skill.Bdd,
       Skill.ImplementationPlanning,
       Skill.ExecutingImplementationPlan,
       Skill.Tdd,
@@ -101,6 +103,7 @@ describe('routeTask', () => {
   test('routes every task type through its complete baseline', () => {
     const expected: Record<TaskType, Skill[]> = {
       [TaskType.NewFeature]: [
+        Skill.Bdd,
         Skill.ImplementationPlanning,
         Skill.ExecutingImplementationPlan,
         Skill.Tdd,

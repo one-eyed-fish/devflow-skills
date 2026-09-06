@@ -1,10 +1,10 @@
 ---
 name: df-ddd-to-tdd-handoff
-description: "将已确认的 DDD event 风暴产物 and 需求可追踪关系转换为可 execution, and language 无关的 TDD implementation 切片. 在 df-ddd-event-storming-design 已产出并确认需求, 命令, event, 聚合, 策略, 不变量, 读模型 or 关系, 且 Codex 需要 tests, implementation 计划 or development 顺序时使用."
-version: "0.2.29"
+description: "将已确认的 DDD event 风暴产物 and 需求可追踪关系转换为可 execution, and language 无关的 TDD implementation 切片. 在 df-ddd-event-storming-design 已产出并确认需求, 命令, event, 聚合, 策略, 不变量, 读模型 or 关系, 且 Codex 需要 tests, implementation 计划 or development 顺序时使用. 存在 Gherkin .feature 时, 以其中 Scenario 与 @req- 标签作为切片与验收锚点."
+version: "0.2.30"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.29"
+  version: "0.2.30"
 ---
 
 # DDD To TDD Handoff
@@ -30,6 +30,7 @@ if DDD 设计尚未确认, 不要 create implementation 切片. return `df-ddd-e
 ## Mapping Rules
 
 - 需求项 -> 1 个 or 多个切片的可追踪锚点 and 验收意图.
+- 已确认的 Gherkin `.feature` Scenario -> 需求验收意图 and 切片锚点; 用 `@req-<id>` 标签连接切片与场景, 不另造与场景无关的行为切片.
 - domain event -> 预期的可观察行为 tests.
 - 命令 -> 应用 service, 用例 or 聚合命令处理器 tests.
 - 聚合不变量 -> domain 单元 tests.

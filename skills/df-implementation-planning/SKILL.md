@@ -1,10 +1,10 @@
 ---
 name: df-implementation-planning
-description: "code 前 write 具体的小步实施计划. 适用于多步 feature, 缺陷 fix, refactor, DDD-to-TDD 交接, 风险行为 change, or 任何需要在 implementation 前明确 file, 命令, 预期 RED/GREEN result, 验证步骤 and 完成标准的工程 task."
-version: "0.2.29"
+description: "code 前 write 具体的小步实施计划. 适用于多步 feature, 缺陷 fix, refactor, DDD-to-TDD 交接, 风险行为 change, or 任何需要在 implementation 前明确 file, 命令, 预期 RED/GREEN result, 验证步骤 and 完成标准的工程 task. 存在 Gherkin .feature 行为契约时, 以其中 Scenario 作为行为切片与验收追踪锚点."
+version: "0.2.30"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.29"
+  version: "0.2.30"
 ---
 
 # Implementation Planning
@@ -19,6 +19,7 @@ metadata:
 2. 列出约束:
    - 不得 change 的行为
    - 公共契约
+   - 若存在经 `df-dev-bdd` 确认的 `.feature`, 行为切片应与其中 Scenario 对应并保持 `@req-` 追踪, 不得凭空发明新的测试或行为结构
    - 数据, 持久化, 顺序, 分页, 安全 or 副作用风险
    - 必须保留的选定 style pack, golden example, 特定风格 anti-pattern and 审查 manifest 项
    - 选定的 Glue target pattern, local 约定, 遗留行为证据, 要移除的 anti-pattern, 以及必须保留的 project 材料

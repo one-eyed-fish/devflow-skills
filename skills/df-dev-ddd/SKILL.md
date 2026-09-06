@@ -1,10 +1,10 @@
 ---
 name: df-dev-ddd
 description: "使用行为优先的 Domain-Driven Design（DDD）方法推进软件开发，从业务需求澄清、领域建模、Event Storming、Command/Event/Rule 设计，到已确认模型向 TDD implementation slices 的交接。适用于新功能、复杂业务规则、状态生命周期、多角色协作、跨聚合流程以及需要保持 domain language 一致的开发任务；不适用于仅有格式调整、纯技术升级或没有业务行为变化的简单修改。"
-version: "0.2.36"
+version: "0.2.37"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.36"
+  version: "0.2.37"
 ---
 
 # DDD Development
@@ -67,7 +67,7 @@ metadata:
 
 在继续下游工作前，必须通过适用的 gate：
 
-- **Requirements gate**：需求、stakeholder、受影响主体、触发条件和缺口已足够明确。
+- **Requirements gate**：需求、stakeholder、受影响主体、触发条件和缺口已足够明确；新需求应先用 `df-dev-bdd` 把行为成文为 Gherkin `.feature`，完成产品经理、项目经理与开发者对齐。
 - **Problem-domain gate**：当前 domain 的职责、排除范围、歧义术语和 CRUD 模板风险已确认。
 - **Authority gate**：Command 发起者、受影响主体、外部 system 和权威来源已确认。
 - **Rule gate**：关键生命周期、身份、唯一性、删除、冲突和后续动作已确认。
@@ -116,6 +116,7 @@ metadata:
 ## Related Skills
 
 - `df-dev-ddd-event-storming-design`：需求澄清、Event Storming 和领域模型设计。
+- `df-dev-bdd`：把需求行为成文为可验收、可执行的 Gherkin `.feature` 契约，供需求对齐与验收追踪。
 - `df-dev-ddd-to-tdd-handoff`：将已确认 DDD 产物转换为 TDD implementation slices。
 - `df-dev-tdd`：执行 tests-first development。
 - `df-implementation-planning`：创建具体、分步且可验证的 implementation plan。

@@ -1,7 +1,7 @@
 interface:
   display_name: "Dev Bdd"
-  short_description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求转化为可讨论、可验收、可自动化执行的行为场景。适用于需要统一业务语言、协作澄清需求、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
-  default_prompt: "使用 $df-dev-bdd 将业务需求转化为 participant、业务意图、Given/When/Then 行为场景和可验证的验收结果，并在必要时交接给 DDD 或 TDD skill。"
+  short_description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求先行成文为 Gherkin DSL 的 .feature 文件，作为产品经理、开发者与项目经理之间可讨论、可验收、可自动化执行的行为契约。适用于新需求对齐、统一业务语言、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
+  default_prompt: "使用 $df-dev-bdd 将新需求先行成文为 Gherkin .feature 契约，对齐产品经理、开发者与项目经理，再交由 DDD 或 TDD skill 继续。"
 
 policy:
   allow_implicit_invocation: true

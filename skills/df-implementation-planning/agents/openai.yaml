@@ -1,4 +1,4 @@
 interface:
   display_name: "Implementation Planning"
-  short_description: "code 前 write 具体的小步实施计划. 适用于多步 feature, 缺陷 fix, refactor, DDD-to-TDD 交接, 风险行为 change, or 任何需要在 implementation 前明确 file, 命令, 预期 RED/GREEN result, 验证步骤 and 完成标准的工程 task."
+  short_description: "code 前 write 具体的小步实施计划. 适用于多步 feature, 缺陷 fix, refactor, DDD-to-TDD 交接, 风险行为 change, or 任何需要在 implementation 前明确 file, 命令, 预期 RED/GREEN result, 验证步骤 and 完成标准的工程 task. 存在 Gherkin .feature 行为契约时, 以其中 Scenario 作为行为切片与验收追踪锚点."
   default_prompt: "使用 $df-implementation-planning generate include file, 命令 and 预期 result 的分步实施计划."

@@ -89,6 +89,8 @@ export enum Skill {
   ResumableWorkflowGuard = 'df-resumable-workflow-guard',
   /** Clarifies domain behavior through event storming and DDD modeling. */
   DomainEventStormingDesign = 'df-ddd-event-storming-design',
+  /** Captures requirement behavior as an executable Gherkin .feature contract. */
+  Bdd = 'df-dev-bdd',
   /** Reuses local repository patterns for thin implementation work. */
   GlueCoding = 'df-glue-coding',
   /** Defines IAM-style permissions, roles, bindings, and authorization checks. */
@@ -207,6 +209,7 @@ const REASONS: Record<Skill, string> = {
   [Skill.EngineeringStandards]: 'The task is standards-sensitive and requires authoritative engineering guidance.',
   [Skill.ResumableWorkflowGuard]: 'The task is long-running, spans multiple stages, or requires resumable execution.',
   [Skill.DomainEventStormingDesign]: 'Domain language, business rules, or ownership boundaries require clarification.',
+  [Skill.Bdd]: 'New requirement behavior must be captured in a Gherkin .feature contract before implementation.',
   [Skill.GlueCoding]: 'The implementation should reuse established repository patterns and local project materials.',
   [Skill.IamAccessControlDesign]: 'The task involves permissions, roles, RBAC, ABAC, or API authorization mapping.',
   [Skill.GoogleAipApiDesign]: 'The task involves resource-oriented API or transport design.',
@@ -233,6 +236,7 @@ const REASONS: Record<Skill, string> = {
  */
 const TASK_SKILLS: Record<TaskType, readonly Skill[]> = {
   [TaskType.NewFeature]: [
+    Skill.Bdd,
     Skill.ImplementationPlanning,
     Skill.ExecutingImplementationPlan,
     Skill.Tdd,
@@ -286,6 +290,7 @@ const EXECUTION_PRIORITY: readonly Skill[] = [
   Skill.EngineeringStandards,
   Skill.ResumableWorkflowGuard,
   Skill.DomainEventStormingDesign,
+  Skill.Bdd,
   Skill.GlueCoding,
   Skill.IamAccessControlDesign,
   Skill.GoogleAipApiDesign,
