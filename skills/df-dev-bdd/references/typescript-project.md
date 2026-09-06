@@ -1,53 +1,71 @@
-# TypeScript Project Organization
+# TypeScript Project Structures
 
-本文档定义 TypeScript 项目中行为模块的推荐文件组织方式。它适用于使用 Bun、Vitest 或其他 TypeScript 测试运行器的项目；Bun 不是这套结构的前提。
+本文列出 TypeScript 项目中可以承载 BDD 行为契约的几种文件组织方式，不把其中任何一种声明为普适的最佳实践。实际选择应先服从目标项目已有的模块边界、测试发现规则和构建命令。
 
-## Recommended Layout
+## Structure A: Module-Colocated Files
 
-对于一个名为 `order` 的行为模块，优先将相关文件放在同一目录：
+一个行为模块可以将实现、单元测试和行为契约放在同一目录：
 
-```mermaid
-treeView-beta
-folder/
-  order.ts
-  order.test.ts
-  order.feature
-  order.steps.ts
-  order.feature.test.ts
+```text
+order.ts
+order.test.ts
+order.feature
+order.steps.ts
+order.feature.test.ts
 ```
 
-这些文件的职责保持稳定：
+各文件可以承担以下职责：
 
-- `order.ts`：生产实现和可被测试调用的公共函数。生产实现不依赖 Cucumber 或测试运行器。
-- `order.test.ts`：模块级单元测试。可以使用 Bun Test，也可以使用 Vitest；测试应直接验证纯逻辑、边界和错误语义。
-- `order.feature`：业务行为契约。使用 Gherkin 描述 participant、前置事实、动作和可观察结果，不写数据库表、类名或 mock 等实现细节。
-- `order.steps.ts`：Cucumber step definitions。它只负责把 Gherkin 步骤连接到测试上下文或公共 API，不承载生产业务规则。
-- `order.feature.test.ts`：Cucumber 执行入口。它负责加载 `.feature` 和 step definitions，并将行为契约纳入项目测试命令。
+- `order.ts`：生产实现和公共函数，不依赖测试运行器或 Cucumber。
+- `order.test.ts`：模块级单元测试，可以使用 Bun Test 或 Vitest。
+- `order.feature`：使用 Gherkin 表达 participant、前置事实、动作和可观察结果。
+- `order.steps.ts`：Cucumber step definitions，负责连接 Gherkin 与测试上下文或公共 API。
+- `order.feature.test.ts`：加载 `.feature` 和 steps 的测试入口。
 
-项目不需要行为契约时，只保留 `<name>.ts` 和 `<name>.test.ts`。存在可执行 Gherkin 契约时，再补齐后三个文件。
+这种布局便于从一个行为模块直接找到对应测试和契约，但是否采用取决于项目的文件发现规则。
 
-## Test Runner Choices
+## Structure B: Separated Test And Feature Directories
 
-`<name>.test.ts` 不是 Bun 专属命名：
+项目也可以将生产实现、单元测试和 Gherkin 文件分开：
 
-- 使用 Bun Test 时，通过 `bun test` 执行单元测试。
-- 使用 Vitest 时，通过 `vitest` 或项目已有的 `vitest run` script 执行单元测试。
-- 两者都应保持测试与被测实现按模块共置，避免为了测试运行器把所有测试集中到一个无关的全局目录。
+```text
+src/order.ts
+src/order.test.ts
+features/order.feature
+features/order.steps.ts
+test/order.feature.test.ts
+```
 
-Cucumber 的 feature test 可以由 Bun Test、Vitest 或项目现有的 Cucumber 启动方式承载。若 `*.feature.test.ts` 会被 Vitest 自动发现，应在 Vitest 配置中明确排除它，或让该文件使用项目约定的 Vitest wrapper，避免同一个 Cucumber 场景被两个测试入口重复执行。
+这种布局适用于项目已经约定使用 `features/`、`test/` 或其他测试目录，或者需要把业务契约与 TypeScript 源码分开管理的情况。基础名称仍可以保持一致，但不是强制要求。
 
-## Organization Rules
+## Test Runner Variants
 
-- 五类文件使用同一个基础名称，便于从行为契约定位实现和测试。
-- 单元测试只覆盖模块边界内的快速反馈；跨模块或真实外部边界放入适合的 integration 或 end-to-end 层。
-- `.feature` 以业务语言表达一个主要行为；step definitions 可以复用 fixture，但不能把技术 setup 反向写回业务契约。
-- `*.feature.test.ts` 只负责测试框架编排；验证逻辑放在 steps 或公共测试辅助模块，生产行为仍放在 `.ts` 实现文件中。
-- 同一项目可以只使用 Bun Test 或只使用 Vitest，不要求为采用此结构同时引入两个单元测试运行器。
+`<name>.test.ts` 可以由不同的 TypeScript 测试运行器执行：
 
-## Adoption Checklist
+- Bun Test 项目通常通过 `bun test` 或已有的项目 script 收集测试。
+- Vitest 项目通常通过 `vitest` 或 `vitest run` 收集测试。
+- Cucumber 执行入口可以由 Bun Test、Vitest 或项目已有的 Cucumber 启动方式承载。
 
-1. 先创建或确认 `<name>.feature`，并为需求添加 `@req-<id>` 追踪标签。
-2. 创建 `<name>.test.ts`，选择项目已有的 Bun Test 或 Vitest。
-3. 创建 `<name>.ts`，只实现当前场景所需的最小行为。
-4. 需要自动化验收时，添加 `<name>.steps.ts` 和 `<name>.feature.test.ts`。
-5. 在项目测试配置中确认单元测试与 Cucumber feature test 不会重复收集或互相覆盖。
+如果 Vitest 的默认规则会收集 `*.feature.test.ts`，项目需要根据实际入口选择排除该文件，或者让它使用项目已有的 Vitest wrapper。这里是配置选项，不是对所有项目的固定要求。
+
+## Structure C: Single Runner Orchestration
+
+项目也可以只保留一套测试入口，由该入口同时编排单元测试和 feature test：
+
+```text
+src/order.ts
+src/order.test.ts
+features/order.feature
+features/order.steps.ts
+test/order.acceptance.test.ts
+```
+
+此时执行入口的名称可以遵循项目已有约定，不必强行使用 `<name>.feature.test.ts`。需要在项目文档或测试配置中记录 feature 文件、steps 和执行入口之间的对应关系。
+
+## Selection Notes
+
+- 先检查 `package.json`、`vitest.config.*`、Bun 配置、Cucumber 配置和 CI 命令，再选择文件布局。
+- 不要因为项目使用 TypeScript 就移动已有测试或强制创建全部五类文件。
+- 没有 Gherkin 契约时，只有实现文件和单元测试文件也可以满足模块测试需求。
+- 有 Gherkin 契约时，重点是保持契约、steps、执行入口和需求标签之间可追踪，而不是文件路径本身。
+- 如果项目同时支持 Bun Test 和 Vitest，应明确每个文件由哪个 runner 收集，避免重复执行。

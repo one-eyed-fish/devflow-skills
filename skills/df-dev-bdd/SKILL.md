@@ -1,10 +1,10 @@
 ---
 name: df-dev-bdd
 description: "使用行为驱动开发（Behavior-Driven Development，BDD）将业务需求先行成文为 Gherkin DSL 的 .feature 文件，作为产品经理、开发者与项目经理之间可讨论、可验收、可自动化执行的行为契约。适用于新需求对齐、统一业务语言、定义验收标准、编写 Given/When/Then 场景或建立业务行为回归保护的开发任务；不适用于只修改内部实现且没有可观察行为变化的纯重构。"
-version: "0.2.38"
+version: "0.2.39"
 license: "GPL-3.0-only"
 metadata:
-  version: "0.2.38"
+  version: "0.2.39"
 ---
 
 # Behavior-Driven Development
@@ -33,7 +33,7 @@ metadata:
 - 三方逐场景确认通过后再冻结；任何一方对场景含义有分歧都视为未对齐，先澄清再进入实现。
 - 若业务边界、participant 或生命周期仍不清，先使用 `df-dev-ddd` 或 `df-dev-ddd-event-storming-design`，再回头补全场景，不要直接写完整 `.feature`。
 
-落地细节、写作规则与常见误区见 [feature-authoring.md](references/feature-authoring.md)；TypeScript 项目的文件组织与 Bun Test、Vitest 选择见 [typescript-project.md](references/typescript-project.md)。
+落地细节、写作规则与常见误区见 [feature-authoring.md](references/feature-authoring.md)；TypeScript 项目的结构清单与 Bun Test、Vitest 选择见 [typescript-project.md](references/typescript-project.md)，Java/Kotlin 项目的结构清单见 [java-project.md](references/java-project.md)。
 
 ## Executable Contract Validator
 
