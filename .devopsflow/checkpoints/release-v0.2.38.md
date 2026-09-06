@@ -4,7 +4,7 @@
 
 - 名称：发布 DevopsFlow 0.2.38
 - 目标：同步 package、Codex 插件、Cursor 插件、agent markers 与 managed asset hashes，准备版本标签发布。本次发布覆盖 `v0.2.37..codex/release-v0.2.38`，核心为 BDD 使用 Gherkin `.feature` 契约并将 TDD 纳入测试范围。
-- 状态：active
+- 状态：done
 - Owner：Codex `/release-v0.2.38`
 - 创建时间：2026-09-06 Asia/Shanghai
 
@@ -16,11 +16,11 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 
 ## Checklist
 
-- [ ] R1 - 从 `main` 创建 `codex/release-v0.2.38`，将 package、Codex plugin、Cursor plugin 和 agent markers 同步到 `0.2.38`。
-- [ ] R2 - 重新计算 managed Codex asset 与 subagent hashes。
-- [ ] R3 - 运行本地 release gate。
-- [ ] R4 - 提交并推送 `codex/release-v0.2.38`，通过 PR 合入 `main`。
-- [ ] R5 - 创建 `v0.2.38` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。
+- [x] R1 - 从 `main` 创建 `codex/release-v0.2.38`，将 package、Codex plugin、Cursor plugin 和 agent markers 同步到 `0.2.38`。
+- [x] R2 - 重新计算 managed Codex asset 与 subagent hashes。
+- [x] R3 - 运行本地 release gate。
+- [x] R4 - 提交并推送 `codex/release-v0.2.38`，通过 PR 合入 `main`。
+- [x] R5 - 创建 `v0.2.38` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。
 
 ## Releases And Tags Conventions
 
@@ -56,7 +56,10 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 从 main HEAD 31807ad 创建 codex/release-v0.2.38。
 提交功能改动 feat: BDD 使用 Gherkin .feature 契约并将 TDD 纳入测试范围（5a8d927）。
 package/plugins/agents -> 0.2.38，重算 managed asset 与 subagent hashes。
-待运行完整本地 release gate，提交、推送、PR 合入 main，随后 tag v0.2.38、创建 GitHub Release 并同步 main -> dev。
+本地 release gate 全绿：metadata/versions/eof/hash/typecheck/lint/format，bun test 338 pass / 0 fail。
+提交版本面（72ca3f7）、推送 release 分支，PR #95 通过 CI 后 squash 合并至 main（eeff363）。
+创建并推送 tag v0.2.38，通过 tag-specific Version Check，创建 GitHub Release（https://github.com/LiTeXz/devopsflow/releases/tag/v0.2.38）。
+同步 main -> dev（31807ad..eeff363）。
 ```
 
 <!-- DF_RELEASE_GOAL_GOVERNANCE_CHECKPOINT_EOF -->
