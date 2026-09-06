@@ -4,7 +4,7 @@
 
 - 名称：发布 DevopsFlow 0.2.39
 - 目标：同步 package、Codex 插件、Cursor 插件、agent markers 与 managed asset hashes，发布 `v0.2.39`。本次发布覆盖 `v0.2.38..main` 的 2 个提交，包含 BDD Gherkin `.feature` 契约校验器、TypeScript 项目参考以及 Java/Kotlin 项目参考。
-- 状态：active
+- 状态：done
 - Owner：Codex `/release-v0.2.39`
 - 创建时间：2026-09-06 Asia/Shanghai
 
@@ -19,8 +19,8 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 - [x] R1 - 从 `main` 创建 `codex/release-v0.2.39`，将 package、Codex plugin、Cursor plugin 和 agent markers 同步到 `0.2.39`。
 - [x] R2 - 重新计算 managed Codex asset 与 subagent hashes。
 - [x] R3 - 运行本地 release gate。
-- [ ] R4 - 提交并推送 `codex/release-v0.2.39`，通过 PR 合入 `main`。
-- [ ] R5 - 创建 `v0.2.39` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。
+- [x] R4 - 提交并推送 `codex/release-v0.2.39`，通过 PR 合入 `main`。PR: https://github.com/LiTeXz/devopsflow/pull/96
+- [x] R5 - 创建 `v0.2.39` tag，验证 tag-specific Version Check 后创建 GitHub Release，并同步 `main` 到 `dev`。Release: https://github.com/LiTeXz/devopsflow/releases/tag/v0.2.39
 
 ## Releases And Tags Conventions
 
@@ -47,11 +47,19 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 | `bun run lint` | 0 | Biome check passed；83 files checked |
 | `bun run format:check` | 0 | Biome format passed；81 files checked |
 | `git diff --cached --check` | 0 | staged diff has no whitespace errors |
+| `git commit -m "chore: release v0.2.39"` | 0 | commit `55bc25d` created |
+| `git push --set-upstream origin codex/release-v0.2.39` | 0 | release branch pushed |
+| `gh pr checks 96 --watch --interval 10` | 0 | `Version Check` and `Skill Metadata Check` passed |
+| `gh pr merge 96 --squash --delete-branch` | 0 | PR #96 merged as commit `a598506` |
+| `git push origin v0.2.39` | 0 | tag pushed |
+| tag `Version Check` run `34020092849` | success | tag-specific version and asset checks passed |
+| `gh release create v0.2.39` | 0 | Release created: https://github.com/LiTeXz/devopsflow/releases/tag/v0.2.39 |
+| `git push origin main:dev` | 0 | `dev` fast-forwarded to `a598506` |
 
 ## Risks And Blockers
 
-- 风险：发布 gate 尚未运行；在 gate 通过并保留命令证据前不创建 tag。
-- Blocker：无已知 blocker。
+- 风险：本次发布已通过本地和 GitHub release gate；未发现阻塞项。
+- Blocker：无。
 
 ## Progress Log
 
@@ -60,6 +68,7 @@ df-release-goal-governance -> df-finishing-development-branch -> df-verification
 main 工作区干净，确认 v0.2.38 之后有 2 个已提交变更，创建 codex/release-v0.2.39。
 package、Codex plugin、Cursor plugin 和 agents markers 已同步到 0.2.39。
 managed Codex asset 与 subagent hashes 已重算并暂存。
+PR #96 已通过 GitHub Actions 并 squash 合并到 `main`；创建并推送 `v0.2.39`，标签专属 Version Check 通过；创建 GitHub Release，并将 `main` 快进同步到 `dev`。
 ```
 
 <!-- DF_RELEASE_GOAL_GOVERNANCE_CHECKPOINT_EOF -->
